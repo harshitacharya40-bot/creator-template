@@ -1,0 +1,5 @@
+node_modules/
+uploads/videos/*
+uploads/photos/*
+!uploads/videos/.gitkeep
+!uploads/photos/.gitkeep

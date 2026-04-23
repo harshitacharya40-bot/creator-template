@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:      #0a0a0a;
+      --surface: #141414;
+      --border:  #222;
+      --text:    #f0f0f0;
+      --muted:   #666;
+      --green:   #22c55e;
+      --red:     #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+    header h1 { font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    header a  { color: var(--muted); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+    header a:hover { color: var(--text); }
+
+    /* ── Layout ── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    /* ── Section ── */
+    section { display: flex; flex-direction: column; gap: 1.25rem; }
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Fields ── */
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .field label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="url"],
+    .field textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+    .field input:focus,
+    .field textarea:focus { border-color: #444; }
+
+    /* two columns for color fields */
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .fields-row { grid-template-columns: 1fr; } }
+
+    .color-row { display: flex; align-items: center; gap: 0.75rem; }
+    .color-row input[type="color"] {
+      width: 44px; height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      cursor: pointer;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .color-row input[type="text"] { flex: 1; }
+
+    /* size selector pills */
+    .size-pills { display: flex; gap: 0.5rem; }
+    .size-pill {
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .size-pill:hover   { border-color: #555; color: var(--text); }
+    .size-pill.active  { border-color: #fff; color: #fff; background: transparent; }
+
+    /* ── Upload box ── */
+    .upload-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .upload-hint { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    .file-pick-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .file-label:hover { border-color: #555; }
+    #fileInput { display: none; }
+    .file-name { font-size: 0.82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+
+    /* description textarea — only shown for videos */
+    #descWrap { display: none; flex-direction: column; gap: 0.4rem; }
+    #descWrap.visible { display: flex; }
+    #descWrap label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    #descInput {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.65rem 0.8rem;
+      border-radius: 6px;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+    #descInput:focus { border-color: #444; }
+    #descInput::placeholder { color: #444; }
+
+    /* progress bar */
+    .progress-wrap { display: none; flex-direction: column; gap: 0.4rem; }
+    .progress-wrap.visible { display: flex; }
+    .progress-bar-bg { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #fff; border-radius: 99px; width: 0%; transition: width 0.2s; }
+    .progress-text { font-size: 0.75rem; color: var(--muted); }
+
+    /* upload button */
+    .upload-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 0.65rem 1.6rem;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: opacity 0.2s;
+      align-self: flex-start;
+    }
+    .upload-btn:hover    { opacity: 0.85; }
+    .upload-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Media library ── */
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .media-card-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+    .media-thumb {
+      position: relative;
+      background: var(--surface);
+      border-radius: 6px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+    }
+    .media-thumb.square { aspect-ratio: 1 / 1; }
+
+    .media-thumb img,
+    .media-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.75);
+      border: none;
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .media-thumb:hover .delete-btn { opacity: 1; }
+    .delete-btn:hover { background: var(--red); }
+
+    /* description editor under video cards */
+    .card-desc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 5px;
+      resize: vertical;
+      min-height: 58px;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+    .card-desc:focus { border-color: #444; }
+    .card-desc::placeholder { color: #333; }
+
+    .desc-save-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-family: inherit;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: flex-end;
+    }
+    .desc-save-btn:hover  { border-color: #888; color: var(--text); }
+    .desc-save-btn.saved  { border-color: var(--green); color: var(--green); }
+
+    .library-empty { color: var(--muted); font-size: 0.85rem; padding: 2rem 0; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error   { border-color: var(--red);   color: var(--red);   }
+
+    /* ── Sticky save bar ── */
+    .save-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #111;
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      z-index: 200;
+    }
+    .save-bar p { font-size: 0.82rem; color: var(--muted); }
+    .btn-save {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 0.75rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.2s, transform 0.1s;
+      min-width: 140px;
+    }
+    .btn-save:hover   { opacity: 0.85; }
+    .btn-save:active  { transform: scale(0.97); }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-save.saved   { background: var(--green); color: #fff; }
+
+    @media (max-width: 600px) {
+      main { padding: 1.5rem 1rem 8rem; }
+      header { padding: 1rem; }
+      .library-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .save-bar { padding: 0.75rem 1rem; }
+      .save-bar p { display: none; }
+      .btn-save { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Admin Panel</h1>
+  <div style="display:flex;gap:1.5rem;align-items:center;">
+    <a href="/" target="_blank">View Site ↗</a>
+    <a href="/admin/logout">Logout</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── 1. Creator Settings ─────────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Creator Settings</p>
+
+    <div class="field">
+      <label for="inputName">Creator Name</label>
+      <input type="text" id="inputName" placeholder="e.g. NOORFXS" />
+    </div>
+
+    <div class="fields-row">
+      <div class="field">
+        <label>Accent Color (name &amp; text)</label>
+        <div class="color-row">
+          <input type="color" id="colorPicker" value="#ffffff" />
+          <input type="text"  id="colorHex"    value="#ffffff" placeholder="#ffffff" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Background Color</label>
+        <div class="color-row">
+          <input type="color" id="bgColorPicker" value="#000000" />
+          <input type="text"  id="bgColorHex"    value="#000000" placeholder="#000000" />
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="inputInsta">Instagram URL</label>
+      <input type="url" id="inputInsta" placeholder="https://instagram.com/username" />
+    </div>
+
+    <div class="field">
+      <label for="inputEmail">Email</label>
+      <input type="email" id="inputEmail" placeholder="your@email.com" />
+    </div>
+  </section>
+
+  <!-- ── 2. Login Credentials ─────────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Login Credentials</p>
+
+    <div class="field">
+      <label for="inputAdminUser">Username</label>
+      <input type="text" id="inputAdminUser" placeholder="LVCHLDSTUDIOS" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="inputAdminPass">New Password</label>
+      <input type="password" id="inputAdminPass" placeholder="Leave blank to keep current" autocomplete="new-password" />
+    </div>
+  </section>
+
+  <!-- ── 3. Mute Button Settings ────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Mute / Unmute Button</p>
+
+    <div class="field">
+      <label>Button Size</label>
+      <div class="size-pills">
+        <button class="size-pill" data-size="small"  onclick="selectSize(this)">Small</button>
+        <button class="size-pill active" data-size="medium" onclick="selectSize(this)">Medium</button>
+        <button class="size-pill" data-size="large"  onclick="selectSize(this)">Large</button>
+      </div>
+    </div>
+
+    <div class="fields-row">
+      <div class="field">
+        <label>Button Background</label>
+        <div class="color-row">
+          <input type="color" id="btnBgPicker" value="#000000" />
+          <input type="text"  id="btnBgHex"    value="transparent" placeholder="transparent or #000000" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Border Color</label>
+        <div class="color-row">
+          <input type="color" id="btnBorderPicker" value="#ffffff" />
+          <input type="text"  id="btnBorderHex"    value="#ffffff" placeholder="#ffffff" />
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Text Color</label>
+      <div class="color-row">
+        <input type="color" id="btnTextPicker" value="#ffffff" />
+        <input type="text"  id="btnTextHex"    value="#ffffff" placeholder="#ffffff" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. Upload Media ────────────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Upload Media</p>
+
+    <div class="upload-box">
+      <p class="upload-hint">
+        Photos: <strong>JPG, PNG, WEBP, GIF</strong> &nbsp;·&nbsp;
+        Videos: <strong>MP4, MOV, WEBM, AVI</strong> &nbsp;·&nbsp; Max 2 GB per file
+      </p>
+
+      <div class="file-pick-row">
+        <label class="file-label" for="fileInput">&#128190; Choose File</label>
+        <input type="file" id="fileInput" accept="image/*,video/*" onchange="onFilePicked(this)" />
+        <span class="file-name" id="fileName">No file chosen</span>
+      </div>
+
+      <!-- Description + position — only shown for videos -->
+      <div id="descWrap">
+        <label for="descInput">Video Description (shown on Work page)</label>
+        <textarea id="descInput" placeholder="Describe this project, the client, the vibe…"></textarea>
+        <label style="margin-top:0.5rem;">Layout</label>
+        <div class="size-pills">
+          <button class="size-pill active" data-pos="bottom" onclick="selectPos(this)">Text below</button>
+          <button class="size-pill"        data-pos="top"    onclick="selectPos(this)">Text above</button>
+          <button class="size-pill"        data-pos="side"   onclick="selectPos(this)">Side by side</button>
+        </div>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+        <span class="progress-text" id="progressText">Uploading…</span>
+      </div>
+
+      <button class="upload-btn" id="uploadBtn" onclick="uploadFile()" disabled>Upload</button>
+    </div>
+  </section>
+
+  <!-- ── 4. Media Library ───────────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Media Library</p>
+    <div id="libraryGrid" class="library-grid"></div>
+  </section>
+
+</main>
+
+<!-- ── Sticky Save Bar ──────────────────────────────────────────────────── -->
+<div class="save-bar">
+  <p>Change anything above, then hit Save.</p>
+  <button class="btn-save" id="saveBtn" onclick="saveSettings()">SAVE</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── Toast ───────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  // ── Size pill selector ──────────────────────────────────────────────────
+  function selectSize(el) {
+    document.querySelectorAll('[data-size]').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function getSelectedSize() {
+    const active = document.querySelector('[data-size].active');
+    return active ? active.dataset.size : 'medium';
+  }
+
+  // ── Text position selector ───────────────────────────────────────────────
+  function selectPos(el) {
+    document.querySelectorAll('[data-pos]').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function getSelectedPos() {
+    const active = document.querySelector('[data-pos].active');
+    return active ? active.dataset.pos : 'bottom';
+  }
+
+  // ── Color picker ↔ hex sync helper ─────────────────────────────────────
+  function syncColors(pickerId, hexId) {
+    const picker = document.getElementById(pickerId);
+    const hex    = document.getElementById(hexId);
+    picker.addEventListener('input', () => { hex.value = picker.value; });
+    hex.addEventListener('input', () => {
+      if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex.value)) {
+        picker.value = hex.value;
+      }
+    });
+  }
+  syncColors('colorPicker',     'colorHex');
+  syncColors('bgColorPicker',   'bgColorHex');
+  syncColors('btnBgPicker',     'btnBgHex');
+  syncColors('btnBorderPicker', 'btnBorderHex');
+  syncColors('btnTextPicker',   'btnTextHex');
+
+  // ── Load config into form ───────────────────────────────────────────────
+  async function loadConfig() {
+    const cfg = await fetch('/api/config').then(r => r.json());
+
+    document.getElementById('inputName').value      = cfg.creatorName  || '';
+    document.getElementById('inputInsta').value     = cfg.instagram    || '';
+    document.getElementById('inputEmail').value     = cfg.email        || '';
+    document.getElementById('inputAdminUser').value = cfg.adminUsername || '';
+
+    const accent = cfg.accentColor    || '#ffffff';
+    const bg     = cfg.backgroundColor || '#000000';
+    document.getElementById('colorPicker').value   = accent;
+    document.getElementById('colorHex').value      = accent;
+    document.getElementById('bgColorPicker').value = bg;
+    document.getElementById('bgColorHex').value    = bg;
+
+    const mb = cfg.muteBtn || {};
+    const btnBg     = mb.bgColor     || 'transparent';
+    const btnBorder = mb.borderColor || '#ffffff';
+    const btnText   = mb.textColor   || '#ffffff';
+
+    document.getElementById('btnBgHex').value     = btnBg;
+    document.getElementById('btnBorderHex').value = btnBorder;
+    document.getElementById('btnTextHex').value   = btnText;
+
+    // Try to set color pickers (only valid for hex values)
+    if (/^#/.test(btnBg))     document.getElementById('btnBgPicker').value     = btnBg;
+    if (/^#/.test(btnBorder)) document.getElementById('btnBorderPicker').value = btnBorder;
+    if (/^#/.test(btnText))   document.getElementById('btnTextPicker').value   = btnText;
+
+    // Size pills
+    const size = mb.size || 'medium';
+    document.querySelectorAll('.size-pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.size === size);
+    });
+  }
+
+  // ── Save settings ───────────────────────────────────────────────────────
+  async function saveSettings() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const body = {
+      creatorName:     document.getElementById('inputName').value.trim(),
+      accentColor:     document.getElementById('colorHex').value.trim()   || '#ffffff',
+      backgroundColor: document.getElementById('bgColorHex').value.trim() || '#000000',
+      instagram:       document.getElementById('inputInsta').value.trim(),
+      email:           document.getElementById('inputEmail').value.trim(),
+      adminUsername:   document.getElementById('inputAdminUser').value.trim() || undefined,
+      adminPassword:   document.getElementById('inputAdminPass').value.trim() || undefined,
+      muteBtn: {
+        size:        getSelectedSize(),
+        bgColor:     document.getElementById('btnBgHex').value.trim()     || 'transparent',
+        borderColor: document.getElementById('btnBorderHex').value.trim() || '#ffffff',
+        textColor:   document.getElementById('btnTextHex').value.trim()   || '#ffffff'
+      }
+    };
+
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error();
+      btn.textContent = 'SAVED ✓';
+      btn.classList.add('saved');
+      setTimeout(() => { btn.textContent = 'SAVE'; btn.classList.remove('saved'); }, 2500);
+    } catch {
+      showToast('Could not save. Try again.', 'error');
+      btn.textContent = 'SAVE';
+    }
+    btn.disabled = false;
+  }
+
+  // ── File picker — detect aspect ratio for videos ────────────────────────
+  let detectedAspectRatio = null;
+
+  function onFilePicked(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('uploadBtn').disabled   = false;
+    detectedAspectRatio = null;
+
+    const isVideo = file.type.startsWith('video/');
+    const descWrap = document.getElementById('descWrap');
+    descWrap.classList.toggle('visible', isVideo);
+    if (!isVideo) { document.getElementById('descInput').value = ''; return; }
+
+    // Detect aspect ratio from the video file
+    const url = URL.createObjectURL(file);
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.src = url;
+    probe.addEventListener('loadedmetadata', () => {
+      if (probe.videoWidth && probe.videoHeight) {
+        detectedAspectRatio = probe.videoWidth / probe.videoHeight;
+      }
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // ── Upload ──────────────────────────────────────────────────────────────
+  function uploadFile() {
+    const input = document.getElementById('fileInput');
+    const file  = input.files[0];
+    if (!file) return;
+
+    const btn      = document.getElementById('uploadBtn');
+    const progWrap = document.getElementById('progressWrap');
+    const progBar  = document.getElementById('progressBar');
+    const progText = document.getElementById('progressText');
+
+    btn.disabled = true;
+    progWrap.classList.add('visible');
+    progBar.style.width  = '0%';
+    progText.textContent = 'Uploading…';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', document.getElementById('descInput').value.trim());
+    formData.append('textPosition', getSelectedPos());
+    if (detectedAspectRatio !== null) {
+      formData.append('aspectRatio', detectedAspectRatio.toFixed(4));
+    }
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progBar.style.width  = pct + '%';
+        progText.textContent = `Uploading… ${pct}%`;
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      progWrap.classList.remove('visible');
+      btn.disabled = false;
+      input.value  = '';
+      document.getElementById('fileName').textContent = 'No file chosen';
+      document.getElementById('descInput').value = '';
+      document.getElementById('descWrap').classList.remove('visible');
+      document.querySelectorAll('[data-pos]').forEach(p => p.classList.toggle('active', p.dataset.pos === 'bottom'));
+      detectedAspectRatio = null;
+
+      if (xhr.status === 200) {
+        showToast('Uploaded!', 'success');
+        loadLibrary();
+      } else {
+        showToast('Upload failed. Try again.', 'error');
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      progWrap.classList.remove('visible');
+      btn.disabled = false;
+      showToast('Upload failed. Check connection.', 'error');
+    });
+
+    xhr.open('POST', '/api/upload');
+    xhr.send(formData);
+  }
+
+  // ── Media library ───────────────────────────────────────────────────────
+  async function loadLibrary() {
+    const media = await fetch('/api/media').then(r => r.json());
+    const grid  = document.getElementById('libraryGrid');
+
+    if (!media.length) {
+      grid.innerHTML = '<p class="library-empty">No media uploaded yet.</p>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    media.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.className = 'media-card-wrap';
+      wrap.id = 'wrap-' + item.id;
+
+      // Thumbnail
+      const thumb = document.createElement('div');
+      thumb.className = item.type === 'video' ? 'media-thumb' : 'media-thumb square';
+
+      if (item.type === 'video') {
+        const v = document.createElement('video');
+        v.src = item.path;
+        v.muted = true; v.loop = true; v.playsInline = true;
+        v.addEventListener('mouseenter', () => v.play());
+        v.addEventListener('mouseleave', () => v.pause());
+        thumb.appendChild(v);
+        thumb.innerHTML += `<span class="badge">Video</span>`;
+      } else {
+        thumb.innerHTML = `<img src="${item.path}" alt="" loading="lazy" /><span class="badge">Photo</span>`;
+      }
+
+      // Delete button
+      const delBtn = document.createElement('button');
+      delBtn.className   = 'delete-btn';
+      delBtn.title       = 'Delete';
+      delBtn.textContent = '✕';
+      delBtn.onclick     = () => deleteMedia(item.id);
+      thumb.appendChild(delBtn);
+
+      wrap.appendChild(thumb);
+
+      // Description + position editor — only for videos
+      if (item.type === 'video') {
+        const ta = document.createElement('textarea');
+        ta.className   = 'card-desc';
+        ta.placeholder = 'Add description…';
+        ta.value       = item.description || '';
+        ta.rows        = 3;
+        wrap.appendChild(ta);
+
+        // Text position pills
+        const posRow = document.createElement('div');
+        posRow.style.cssText = 'display:flex;gap:0.4rem;margin-top:2px;';
+        const labels = { bottom: 'Text below', top: 'Text above', side: 'Side by side' };
+        ['bottom','top','side'].forEach(pos => {
+          const pill = document.createElement('button');
+          pill.className   = 'size-pill' + ((item.textPosition || 'bottom') === pos ? ' active' : '');
+          pill.textContent = labels[pos];
+          pill.dataset.cardPos = pos;
+          pill.onclick = () => {
+            posRow.querySelectorAll('[data-card-pos]').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+          };
+          posRow.appendChild(pill);
+        });
+        wrap.appendChild(posRow);
+
+        const saveDescBtn = document.createElement('button');
+        saveDescBtn.className   = 'desc-save-btn';
+        saveDescBtn.textContent = 'Save';
+        saveDescBtn.onclick     = () => {
+          const pos = posRow.querySelector('[data-card-pos].active')?.dataset.cardPos || 'bottom';
+          saveDescription(item.id, ta, pos, saveDescBtn);
+        };
+        wrap.appendChild(saveDescBtn);
+      }
+
+      grid.appendChild(wrap);
+    });
+  }
+
+  // ── Save description + position for a video ─────────────────────────────
+  async function saveDescription(id, textarea, textPosition, btn) {
+    const original = btn.textContent;
+    btn.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/media/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: textarea.value.trim(), textPosition })
+      });
+      if (!res.ok) throw new Error();
+      btn.textContent = 'Saved ✓';
+      btn.classList.add('saved');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('saved'); }, 2000);
+    } catch {
+      showToast('Could not save.', 'error');
+      btn.textContent = original;
+    }
+  }
+
+  // ── Delete media ─────────────────────────────────────────────────────────
+  async function deleteMedia(id) {
+    if (!confirm('Delete this file? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/media/' + id, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      document.getElementById('wrap-' + id)?.remove();
+      const grid = document.getElementById('libraryGrid');
+      if (!grid.querySelector('.media-card-wrap')) {
+        grid.innerHTML = '<p class="library-empty">No media uploaded yet.</p>';
+      }
+      showToast('Deleted.', 'success');
+    } catch {
+      showToast('Could not delete.', 'error');
+    }
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  loadConfig();
+  loadLibrary();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "9e315ea2-20e3-4171-8e04-863c1f577222",
+    "type": "video",
+    "filename": "74e63795-9f61-477b-b499-d85f20118983.mp4",
+    "originalName": "hf_20260421_033614_09d32844-ad78-4c1b-8904-bc74aa856547 (1).mp4",
+    "path": "/uploads/videos/74e63795-9f61-477b-b499-d85f20118983.mp4",
+    "size": 13591706,
+    "uploadedAt": "2026-04-23T16:44:30.270Z"
+  },
+  {
+    "id": "9ec1aeb1-d31d-40a9-9ccc-2dffb72fa944",
+    "type": "video",
+    "filename": "ba42b023-7666-442b-ba5d-9edcb323cfcb.mp4",
+    "originalName": "hf_20260421_040351_f17407a4-2bd4-41fd-9fe3-4f07eb2413c3 (2).mp4",
+    "path": "/uploads/videos/ba42b023-7666-442b-ba5d-9edcb323cfcb.mp4",
+    "size": 14191503,
+    "uploadedAt": "2026-04-23T16:44:23.567Z"
+  },
+  {
+    "id": "014ec1ec-645d-4dc0-9c7a-058cff7d9929",
+    "type": "video",
+    "filename": "6f89cbd4-615e-491a-bab1-d67f339bdf2d.mp4",
+    "originalName": "WhatsApp Video 2026-04-23 at 9.47.48 PM.mp4",
+    "path": "/uploads/videos/6f89cbd4-615e-491a-bab1-d67f339bdf2d.mp4",
+    "size": 3153743,
+    "uploadedAt": "2026-04-23T16:39:23.838Z"
+  }
+]

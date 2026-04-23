@@ -1,0 +1,15 @@
+{
+  "creatorName": "LVCHLD",
+  "accentColor": "#ffffff",
+  "backgroundColor": "#000000",
+  "instagram": "https://www.instagram.com/christianlovechild/",
+  "email": "your@email.com",
+  "muteBtn": {
+    "size": "medium",
+    "bgColor": "transparent",
+    "borderColor": "#ffffff",
+    "textColor": "#ffffff"
+  },
+  "adminUsername": "LVCHLDSTUDIOS",
+  "adminPassword": "LVCHLDSTUDIOS"
+}

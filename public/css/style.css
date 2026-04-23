@@ -1,0 +1,233 @@
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── Variables (overridden via JS from config) ───────────────────────────── */
+:root {
+  --accent:      #ffffff;
+  --bg:          #000000;
+  --btn-bg:      transparent;
+  --btn-border:  #ffffff;
+  --btn-text:    #ffffff;
+  --btn-fs:      0.75rem;
+  --btn-padding: 5px 18px;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+html, body {
+  background: var(--bg);
+  color: #fff;
+  font-family: 'Inter', Arial, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.4rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+nav a:hover  { opacity: 1; }
+nav a.active { opacity: 1; }
+
+/* ── Creator name ────────────────────────────────────────────────────────── */
+.creator-name {
+  font-family: 'Bebas Neue', 'Arial Black', sans-serif;
+  font-size: clamp(4rem, 14vw, 12rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  padding: 0.25rem 1.5rem 1.25rem;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+/* ── Mute / unmute pill button ───────────────────────────────────────────── */
+.mute-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: var(--btn-bg);
+  border: 1.5px solid var(--btn-border);
+  color: var(--btn-text);
+  border-radius: 999px;
+  padding: var(--btn-padding);
+  font-size: var(--btn-fs);
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  z-index: 10;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.mute-btn:hover { opacity: 0.75; }
+
+/* ── HOME — masonry media wall ───────────────────────────────────────────── */
+.media-wall {
+  columns: 3;
+  column-gap: 3px;
+  padding: 0 3px 3px;
+}
+
+.media-item {
+  break-inside: avoid;
+  margin-bottom: 3px;
+  display: block;
+  overflow: hidden;
+  background: #111;
+  position: relative;   /* needed for mute btn */
+}
+
+.media-item img,
+.media-item video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── WORK — one row per video ────────────────────────────────────────────── */
+.work-wall {
+  padding: 0 2rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.work-row {
+  display: flex;
+  gap: 1.25rem;
+}
+
+/* ── Layout: top / bottom — centered column ── */
+.work-row.layout-top,
+.work-row.layout-bottom {
+  flex-direction: column;
+  align-items: center;
+}
+
+.work-row.layout-top .work-video-wrap,
+.work-row.layout-bottom .work-video-wrap {
+  width: 65%;
+}
+
+.work-row.layout-top .work-desc,
+.work-row.layout-bottom .work-desc {
+  width: 65%;
+}
+
+/* ── Layout: side — video left, text right ── */
+.work-row.layout-side {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 3rem;
+}
+
+.work-row.layout-side .work-video-wrap {
+  flex: 0 0 58%;
+  width: auto;
+}
+
+.work-row.layout-side .work-desc {
+  flex: 1;
+  width: auto;
+  padding-top: 0.4rem;
+}
+
+/* shared video & desc styles */
+.work-video-wrap {
+  position: relative;
+  background: #111;
+  overflow: hidden;
+}
+
+.work-video-wrap video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.work-desc {
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: rgba(255,255,255,0.65);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.empty {
+  padding: 4rem 2rem;
+  opacity: 0.3;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Let's Talk page ─────────────────────────────────────────────────────── */
+.contact-wrap {
+  padding: 2rem 2rem 4rem;
+}
+
+.contact-block {
+  margin-bottom: 2.5rem;
+}
+
+.contact-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.35;
+  margin-bottom: 0.4rem;
+}
+
+.contact-link {
+  display: inline-block;
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+  letter-spacing: -0.02em;
+  word-break: break-all;
+}
+.contact-link:hover { opacity: 1; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .media-wall { columns: 2; }
+  .work-row.layout-top .work-video-wrap,
+  .work-row.layout-bottom .work-video-wrap { width: 85%; }
+  .work-row.layout-top .work-desc,
+  .work-row.layout-bottom .work-desc       { width: 85%; }
+  .work-row.layout-side { flex-direction: column; }
+  .work-row.layout-side .work-video-wrap   { flex: none; width: 100%; }
+  .work-row.layout-side .work-desc         { flex: none; width: 100%; }
+}
+@media (max-width: 520px) {
+  nav { gap: 1.2rem; padding: 1rem; }
+  .creator-name { padding: 0.2rem 1rem 1rem; }
+  .media-wall { columns: 1; }
+  .work-wall  { padding: 0 1rem 3rem; gap: 3rem; }
+  .work-row.layout-top .work-video-wrap,
+  .work-row.layout-bottom .work-video-wrap { width: 100%; }
+  .work-row.layout-top .work-desc,
+  .work-row.layout-bottom .work-desc       { width: 100%; }
+  .contact-wrap { padding: 1rem 1rem 3rem; }
+}
