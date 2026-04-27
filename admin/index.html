@@ -407,6 +407,16 @@
       <label for="inputEmail">Email</label>
       <input type="email" id="inputEmail" placeholder="your@email.com" />
     </div>
+
+    <div class="field">
+      <label for="inputAppStore">App Store Link (optional)</label>
+      <input type="url" id="inputAppStore" placeholder="https://apps.apple.com/app/id..." />
+    </div>
+
+    <div class="field">
+      <label for="inputStore">Online Store Link (optional)</label>
+      <input type="url" id="inputStore" placeholder="https://yourstore.com" />
+    </div>
   </section>
 
   <!-- ── 2. Login Credentials ─────────────────────────────────────────────── -->
@@ -424,7 +434,27 @@
     </div>
   </section>
 
-  <!-- ── 3. Mute Button Settings ────────────────────────────────────────── -->
+  <!-- ── 3. Services ──────────────────────────────────────────────────────── -->
+  <section>
+    <p class="section-title">Services</p>
+
+    <div id="servicesList" style="display:flex;flex-direction:column;gap:1rem;"></div>
+
+    <div class="upload-box" style="margin-top:0.5rem;">
+      <p class="upload-hint">Add a new service</p>
+      <div class="field">
+        <label for="newSvcTitle">Service Title</label>
+        <input type="text" id="newSvcTitle" placeholder="e.g. Professional AI Videos & Assets" />
+      </div>
+      <div class="field">
+        <label for="newSvcDesc">Description</label>
+        <textarea id="newSvcDesc" placeholder="2–3 lines describing this service…" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;resize:vertical;min-height:70px;line-height:1.6;transition:border-color 0.2s;width:100%;"></textarea>
+      </div>
+      <button class="upload-btn" onclick="addService()">Add Service</button>
+    </div>
+  </section>
+
+  <!-- ── 4. Mute Button Settings ─────────────────────────────────────────── -->
   <section>
     <p class="section-title">Mute / Unmute Button</p>
 
@@ -571,6 +601,8 @@
     document.getElementById('inputName').value      = cfg.creatorName  || '';
     document.getElementById('inputInsta').value     = cfg.instagram    || '';
     document.getElementById('inputEmail').value     = cfg.email        || '';
+    document.getElementById('inputAppStore').value  = cfg.appStoreLink || '';
+    document.getElementById('inputStore').value     = cfg.storeLink    || '';
     document.getElementById('inputAdminUser').value = cfg.adminUsername || '';
 
     const accent = cfg.accentColor    || '#ffffff';
@@ -613,6 +645,8 @@
       backgroundColor: document.getElementById('bgColorHex').value.trim() || '#000000',
       instagram:       document.getElementById('inputInsta').value.trim(),
       email:           document.getElementById('inputEmail').value.trim(),
+      appStoreLink:    document.getElementById('inputAppStore').value.trim(),
+      storeLink:       document.getElementById('inputStore').value.trim(),
       adminUsername:   document.getElementById('inputAdminUser').value.trim() || undefined,
       adminPassword:   document.getElementById('inputAdminPass').value.trim() || undefined,
       muteBtn: {
@@ -850,9 +884,107 @@
     }
   }
 
+  // ── Services ─────────────────────────────────────────────────────────────
+  async function loadServices() {
+    const services = await fetch('/api/services').then(r => r.json());
+    const list = document.getElementById('servicesList');
+    list.innerHTML = '';
+
+    if (!services.length) {
+      list.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">No services yet.</p>';
+      return;
+    }
+
+    services.forEach((svc, i) => {
+      const card = document.createElement('div');
+      card.id = 'svc-' + svc.id;
+      card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;';
+
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+          <input type="text" value="${svc.title.replace(/"/g,'&quot;')}" placeholder="Service title"
+            style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;font-weight:600;padding:0.5rem 0.7rem;border-radius:5px;outline:none;flex:1;"
+            id="svc-title-${svc.id}" />
+          <button onclick="deleteSvc('${svc.id}')"
+            style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.7rem;border-radius:5px;cursor:pointer;font-size:0.75rem;white-space:nowrap;transition:all 0.2s;"
+            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+            Delete
+          </button>
+        </div>
+        <textarea id="svc-desc-${svc.id}" placeholder="Description…"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.82rem;padding:0.5rem 0.7rem;border-radius:5px;outline:none;resize:vertical;min-height:60px;line-height:1.6;">${svc.description}</textarea>
+        <button onclick="saveSvc('${svc.id}')"
+          style="align-self:flex-end;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:0.7rem;font-family:inherit;padding:4px 12px;border-radius:4px;cursor:pointer;transition:all 0.2s;"
+          id="svc-save-${svc.id}"
+          onmouseover="this.style.borderColor='#888';this.style.color='var(--text)';"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">
+          Save
+        </button>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  async function saveSvc(id) {
+    const btn   = document.getElementById('svc-save-' + id);
+    const title = document.getElementById('svc-title-' + id).value.trim();
+    const desc  = document.getElementById('svc-desc-'  + id).value.trim();
+    const orig  = btn.textContent;
+    btn.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/services/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: desc })
+      });
+      if (!res.ok) throw new Error();
+      btn.textContent = 'Saved ✓';
+      btn.style.borderColor = 'var(--green)';
+      btn.style.color       = 'var(--green)';
+      setTimeout(() => { btn.textContent = orig; btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--muted)'; }, 2000);
+    } catch {
+      showToast('Could not save service.', 'error');
+      btn.textContent = orig;
+    }
+  }
+
+  async function deleteSvc(id) {
+    if (!confirm('Delete this service?')) return;
+    try {
+      const res = await fetch('/api/services/' + id, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      document.getElementById('svc-' + id)?.remove();
+      showToast('Service deleted.', 'success');
+    } catch {
+      showToast('Could not delete.', 'error');
+    }
+  }
+
+  async function addService() {
+    const title = document.getElementById('newSvcTitle').value.trim();
+    const desc  = document.getElementById('newSvcDesc').value.trim();
+    if (!title) { showToast('Enter a service title.', 'error'); return; }
+    try {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: desc })
+      });
+      if (!res.ok) throw new Error();
+      document.getElementById('newSvcTitle').value = '';
+      document.getElementById('newSvcDesc').value  = '';
+      showToast('Service added!', 'success');
+      loadServices();
+    } catch {
+      showToast('Could not add service.', 'error');
+    }
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────────
   loadConfig();
   loadLibrary();
+  loadServices();
 </script>
 
 </body>

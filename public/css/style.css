@@ -209,6 +209,94 @@ nav a.active { opacity: 1; }
 }
 .contact-link:hover { opacity: 1; }
 
+/* ── Services page ───────────────────────────────────────────────────────── */
+.services-wrap {
+  padding: 0 2rem 6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.service-item:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
+
+.service-number {
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+}
+
+.service-title {
+  font-size: clamp(1.1rem, 3vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.service-desc {
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: rgba(255,255,255,0.4);
+  max-width: 580px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  opacity: 0.4;
+}
+.footer-link:hover { opacity: 0.9; }
+
+.footer-link-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+.footer-link-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.footer-copy {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.12);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .media-wall { columns: 2; }
@@ -229,5 +317,7 @@ nav a.active { opacity: 1; }
   .work-row.layout-bottom .work-video-wrap { width: 100%; }
   .work-row.layout-top .work-desc,
   .work-row.layout-bottom .work-desc       { width: 100%; }
-  .contact-wrap { padding: 1rem 1rem 3rem; }
+  .contact-wrap    { padding: 1rem 1rem 3rem; }
+  .services-wrap   { padding: 0 1rem 3rem; }
+  footer { padding: 2rem 1rem; flex-direction: column; align-items: flex-start; gap: 1.5rem; }
 }

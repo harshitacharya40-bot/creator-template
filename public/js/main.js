@@ -35,6 +35,43 @@ function setActiveNav() {
   });
 }
 
+// ── Render footer ──────────────────────────────────────────────────────────
+function renderFooter(cfg) {
+  const footer = document.getElementById('siteFooter');
+  if (!footer) return;
+
+  const links = [];
+
+  if (cfg.appStoreLink) {
+    links.push(`
+      <a class="footer-link" href="${cfg.appStoreLink}" target="_blank" rel="noopener">
+        <span class="footer-link-label">App Store</span>
+        <span class="footer-link-name">Download App</span>
+      </a>
+    `);
+  }
+
+  if (cfg.storeLink) {
+    const storeName = cfg.storeLink.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+    links.push(`
+      <a class="footer-link" href="${cfg.storeLink}" target="_blank" rel="noopener">
+        <span class="footer-link-label">Online Store</span>
+        <span class="footer-link-name">${storeName}</span>
+      </a>
+    `);
+  }
+
+  if (!links.length) {
+    footer.style.display = 'none';
+    return;
+  }
+
+  footer.innerHTML = `
+    <div class="footer-links">${links.join('')}</div>
+    <span class="footer-copy">${cfg.creatorName || ''}</span>
+  `;
+}
+
 // ── Sort: 16:9 (wide) first, then everything else ─────────────────────────
 function sortByAspect(items) {
   return [...items].sort((a, b) => {
@@ -164,6 +201,29 @@ function renderWorkPage(videos) {
   });
 }
 
+// ── SERVICES page ─────────────────────────────────────────────────────────
+function renderServices(services) {
+  const wrap = document.getElementById('servicesWrap');
+  if (!wrap) return;
+
+  if (!services.length) {
+    wrap.innerHTML = '<p class="empty">No services listed yet.</p>';
+    return;
+  }
+
+  wrap.innerHTML = '';
+  services.forEach((svc, i) => {
+    const item = document.createElement('div');
+    item.className = 'service-item';
+    item.innerHTML = `
+      <span class="service-number">${String(i + 1).padStart(2, '0')}</span>
+      <div class="service-title">${svc.title}</div>
+      <div class="service-desc">${svc.description}</div>
+    `;
+    wrap.appendChild(item);
+  });
+}
+
 // ── Let's Talk ────────────────────────────────────────────────────────────
 function renderContact(cfg) {
   const wrap = document.getElementById('contactWrap');
@@ -192,6 +252,7 @@ async function initHome() {
   const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/media').then(r => r.json())]);
   setActiveNav();
   renderWall(media);
+  renderFooter(cfg);
 }
 
 async function initWork() {
@@ -199,10 +260,19 @@ async function initWork() {
   setActiveNav();
   const videos = media.filter(m => m.type === 'video');
   renderWorkPage(videos);
+  renderFooter(cfg);
+}
+
+async function initServices() {
+  const [cfg, services] = await Promise.all([applyConfig(), fetch('/api/services').then(r => r.json())]);
+  setActiveNav();
+  renderServices(services);
+  renderFooter(cfg);
 }
 
 async function initLetsTalk() {
   const cfg = await applyConfig();
   setActiveNav();
   renderContact(cfg);
+  renderFooter(cfg);
 }

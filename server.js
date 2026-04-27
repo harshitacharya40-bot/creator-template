@@ -16,6 +16,18 @@ const PORT = process.env.PORT || 3000;
 if (!fs.existsSync('data/media.json')) {
   fs.writeFileSync('data/media.json', '[]');
 }
+
+const defaultServices = [
+  { id: uuidv4(), title: 'Professional AI Videos & Assets',                    description: 'Cutting-edge AI-generated visuals crafted to elevate your brand. From concept to final render, every frame is built with purpose and precision.' },
+  { id: uuidv4(), title: 'AI Inserts for Dynamic Music Videos',                 description: 'Seamlessly blended AI-generated sequences that amplify the energy of your music video. Custom visuals that move with the music and tell the story.' },
+  { id: uuidv4(), title: 'Creative Direction & Consultation',                   description: 'Strategic vision for your visual identity. We guide projects from concept to execution, ensuring every creative decision aligns with your brand.' },
+  { id: uuidv4(), title: 'Imaging & Visualizers for Brands, Artists & Labels',  description: 'Bespoke visual content for brands, recording artists, and labels. Immersive imagery and motion visuals designed to make a lasting impression.' }
+];
+
+if (!fs.existsSync('data/services.json')) {
+  fs.writeFileSync('data/services.json', JSON.stringify(defaultServices, null, 2));
+}
+
 if (!fs.existsSync('config.json')) {
   fs.writeFileSync('config.json', JSON.stringify({
     creatorName:    'YOUR NAME',
@@ -23,22 +35,27 @@ if (!fs.existsSync('config.json')) {
     backgroundColor:'#000000',
     instagram:      'https://instagram.com/username',
     email:          'your@email.com',
+    appStoreLink:   '',
+    storeLink:      '',
     adminUsername:  'LVCHLDSTUDIOS',
     adminPassword:  'LVCHLDSTUDIOS'
   }, null, 2));
 } else {
-  // Add default credentials if missing from existing config
   const cfg = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-  if (!cfg.adminUsername) cfg.adminUsername = 'LVCHLDSTUDIOS';
-  if (!cfg.adminPassword) cfg.adminPassword = 'LVCHLDSTUDIOS';
+  if (!cfg.adminUsername)            cfg.adminUsername = 'LVCHLDSTUDIOS';
+  if (!cfg.adminPassword)            cfg.adminPassword = 'LVCHLDSTUDIOS';
+  if (cfg.appStoreLink === undefined) cfg.appStoreLink = '';
+  if (cfg.storeLink    === undefined) cfg.storeLink    = '';
   fs.writeFileSync('config.json', JSON.stringify(cfg, null, 2));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function readMedia()   { return JSON.parse(fs.readFileSync('data/media.json', 'utf8')); }
-function writeMedia(d) { fs.writeFileSync('data/media.json', JSON.stringify(d, null, 2)); }
-function readConfig()  { return JSON.parse(fs.readFileSync('config.json',     'utf8')); }
-function writeConfig(d){ fs.writeFileSync('config.json',     JSON.stringify(d, null, 2)); }
+function readMedia()      { return JSON.parse(fs.readFileSync('data/media.json',    'utf8')); }
+function writeMedia(d)    { fs.writeFileSync('data/media.json',    JSON.stringify(d, null, 2)); }
+function readConfig()     { return JSON.parse(fs.readFileSync('config.json',        'utf8')); }
+function writeConfig(d)   { fs.writeFileSync('config.json',        JSON.stringify(d, null, 2)); }
+function readServices()   { return JSON.parse(fs.readFileSync('data/services.json', 'utf8')); }
+function writeServices(d) { fs.writeFileSync('data/services.json', JSON.stringify(d, null, 2)); }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -87,11 +104,11 @@ const upload = multer({
 // ── Public API ────────────────────────────────────────────────────────────────
 app.get('/api/config', (req, res) => {
   const cfg = readConfig();
-  // Never expose credentials to public
   const { adminUsername, adminPassword, ...publicCfg } = cfg;
   res.json(publicCfg);
 });
-app.get('/api/media', (req, res) => res.json(readMedia()));
+app.get('/api/media',    (req, res) => res.json(readMedia()));
+app.get('/api/services', (req, res) => res.json(readServices()));
 
 // ── Admin login / logout ──────────────────────────────────────────────────────
 app.get('/admin/login', (req, res) => {
@@ -119,16 +136,49 @@ app.get('/admin/logout', (req, res) => {
 app.post('/api/config', requireAuth, (req, res) => {
   const cfg = readConfig();
   const { creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
-          adminUsername, adminPassword } = req.body;
+          appStoreLink, storeLink, adminUsername, adminPassword } = req.body;
   if (!creatorName || !email) {
     return res.status(400).json({ error: 'creatorName and email are required' });
   }
   writeConfig({
     ...cfg,
     creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
+    appStoreLink: appStoreLink || '',
+    storeLink:    storeLink    || '',
     adminUsername: adminUsername || cfg.adminUsername,
     adminPassword: adminPassword || cfg.adminPassword
   });
+  res.json({ ok: true });
+});
+
+// Services CRUD
+app.post('/api/services', requireAuth, (req, res) => {
+  const services = readServices();
+  const entry = {
+    id:          uuidv4(),
+    title:       req.body.title       || '',
+    description: req.body.description || ''
+  };
+  services.push(entry);
+  writeServices(services);
+  res.json({ ok: true, item: entry });
+});
+
+app.patch('/api/services/:id', requireAuth, (req, res) => {
+  const services = readServices();
+  const item = services.find(s => s.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  if (req.body.title       !== undefined) item.title       = req.body.title;
+  if (req.body.description !== undefined) item.description = req.body.description;
+  writeServices(services);
+  res.json({ ok: true });
+});
+
+app.delete('/api/services/:id', requireAuth, (req, res) => {
+  const services = readServices();
+  const item = services.find(s => s.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  writeServices(services.filter(s => s.id !== req.params.id));
   res.json({ ok: true });
 });
 
@@ -178,9 +228,10 @@ app.get('/admin',  requireAuth, (req, res) => res.sendFile(path.join(__dirname, 
 app.get('/admin/', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'admin/index.html')));
 
 // ── Public page routes ────────────────────────────────────────────────────────
-app.get('/',         (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/work',     (req, res) => res.sendFile(path.join(__dirname, 'public/work.html')));
-app.get('/letstalk', (req, res) => res.sendFile(path.join(__dirname, 'public/letstalk.html')));
+app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
+app.get('/work',      (req, res) => res.sendFile(path.join(__dirname, 'public/work.html')));
+app.get('/services',  (req, res) => res.sendFile(path.join(__dirname, 'public/services.html')));
+app.get('/letstalk',  (req, res) => res.sendFile(path.join(__dirname, 'public/letstalk.html')));
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
