@@ -158,20 +158,38 @@
     </div>
   </section>
 
-  <!-- ── 2. Page Names ─────────────────────────────────────────────────────── -->
+  <!-- ── 2. Page Names (Nav) ───────────────────────────────────────────────── -->
   <section>
-    <p class="section-title">Page Names (Nav)</p>
+    <p class="section-title">Page Names — Navigation Links</p>
     <div class="fields-row">
-      <div class="field"><label>Home</label><input type="text" id="pn-home" placeholder="Home" /></div>
-      <div class="field"><label>Work</label><input type="text" id="pn-work" placeholder="Work" /></div>
+      <div class="field"><label>Home nav link</label><input type="text" id="pn-home" placeholder="Home" /></div>
+      <div class="field"><label>Work nav link</label><input type="text" id="pn-work" placeholder="Work" /></div>
     </div>
     <div class="fields-row">
-      <div class="field"><label>Services</label><input type="text" id="pn-services" placeholder="Services" /></div>
-      <div class="field"><label>App Page</label><input type="text" id="pn-app" placeholder="App Store" /></div>
+      <div class="field"><label>Services nav link</label><input type="text" id="pn-services" placeholder="Services" /></div>
+      <div class="field"><label>App page nav link</label><input type="text" id="pn-app" placeholder="App Store" /></div>
     </div>
     <div class="fields-row">
-      <div class="field"><label>Store Page</label><input type="text" id="pn-store" placeholder="Store" /></div>
-      <div class="field"><label>Let's Talk</label><input type="text" id="pn-letstalk" placeholder="Let's Talk" /></div>
+      <div class="field"><label>Store page nav link</label><input type="text" id="pn-store" placeholder="Store" /></div>
+      <div class="field"><label>Let's Talk nav link</label><input type="text" id="pn-letstalk" placeholder="Let's Talk" /></div>
+    </div>
+  </section>
+
+  <!-- ── 2b. Page Titles (Big Display Title) ───────────────────────────────── -->
+  <section>
+    <p class="section-title">Page Titles — Big Display Text</p>
+    <p style="font-size:0.78rem;color:var(--muted);margin-top:-0.5rem;">The large title shown at the top of each page. Leave blank to show the Creator Name.</p>
+    <div class="fields-row">
+      <div class="field"><label>Home page title</label><input type="text" id="pt-home" placeholder="Leave blank = Creator Name" /></div>
+      <div class="field"><label>Work page title</label><input type="text" id="pt-work" placeholder="e.g. Work" /></div>
+    </div>
+    <div class="fields-row">
+      <div class="field"><label>Services page title</label><input type="text" id="pt-services" placeholder="e.g. Services" /></div>
+      <div class="field"><label>App page title</label><input type="text" id="pt-app" placeholder="e.g. App Store" /></div>
+    </div>
+    <div class="fields-row">
+      <div class="field"><label>Store page title</label><input type="text" id="pt-store" placeholder="e.g. Store" /></div>
+      <div class="field"><label>Let's Talk page title</label><input type="text" id="pt-letstalk" placeholder="e.g. Let's Talk" /></div>
     </div>
   </section>
 
@@ -262,6 +280,10 @@
           <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'main')">Side by side</button>
         </div>
       </div>
+      <div class="field">
+        <label>Link URL (optional — clicking opens this link)</label>
+        <input type="url" id="mainLinkUrl" placeholder="https://example.com" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
+      </div>
       <div class="progress-wrap" id="mainProgressWrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="mainProgressBar"></div></div>
         <span class="progress-text" id="mainProgressText">Uploading…</span>
@@ -291,6 +313,10 @@
           <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'app')">Side by side</button>
         </div>
       </div>
+      <div class="field">
+        <label>Link URL (optional — clicking opens this link)</label>
+        <input type="url" id="appLinkUrl" placeholder="https://apps.apple.com/..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
+      </div>
       <div class="progress-wrap" id="appProgressWrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="appProgressBar"></div></div>
         <span class="progress-text" id="appProgressText">Uploading…</span>
@@ -319,6 +345,10 @@
           <button class="size-pill"        data-pos="top"    onclick="selectPos(this,'store')">Text above</button>
           <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'store')">Side by side</button>
         </div>
+      </div>
+      <div class="field">
+        <label>Link URL (optional — clicking opens this link)</label>
+        <input type="url" id="storeLinkUrl" placeholder="https://yourstore.com/product" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
       </div>
       <div class="progress-wrap" id="storeProgressWrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="storeProgressBar"></div></div>
@@ -419,6 +449,15 @@
     document.getElementById('pn-store').value    = pn.store    || 'Store';
     document.getElementById('pn-letstalk').value = pn.letstalk || "Let's Talk";
 
+    // Page titles
+    const pt = cfg.pageTitles || {};
+    document.getElementById('pt-home').value     = pt.home     || '';
+    document.getElementById('pt-work').value     = pt.work     || 'Work';
+    document.getElementById('pt-services').value = pt.services || 'Services';
+    document.getElementById('pt-app').value      = pt.app      || 'App Store';
+    document.getElementById('pt-store').value    = pt.store    || 'Store';
+    document.getElementById('pt-letstalk').value = pt.letstalk || "Let's Talk";
+
     // Update section titles with current page names
     const appTitle   = document.getElementById('appSectionTitle');
     const storeTitle = document.getElementById('storeSectionTitle');
@@ -446,6 +485,14 @@
         app:      document.getElementById('pn-app').value.trim()      || 'App Store',
         store:    document.getElementById('pn-store').value.trim()    || 'Store',
         letstalk: document.getElementById('pn-letstalk').value.trim() || "Let's Talk"
+      },
+      pageTitles: {
+        home:     document.getElementById('pt-home').value.trim(),
+        work:     document.getElementById('pt-work').value.trim()     || 'Work',
+        services: document.getElementById('pt-services').value.trim() || 'Services',
+        app:      document.getElementById('pt-app').value.trim()      || 'App Store',
+        store:    document.getElementById('pt-store').value.trim()    || 'Store',
+        letstalk: document.getElementById('pt-letstalk').value.trim() || "Let's Talk"
       },
       muteBtn: {
         size:        getSelectedSize(),
@@ -507,10 +554,12 @@
     progBar.style.width = '0%';
     progText.textContent = 'Uploading…';
 
+    const linkUrlEl = document.getElementById(prefix + 'LinkUrl');
     const formData = new FormData();
     formData.append('file', file);
     formData.append('description', document.getElementById(descInputId).value.trim());
     formData.append('textPosition', getSelectedPos(prefix));
+    formData.append('linkUrl', linkUrlEl ? linkUrlEl.value.trim() : '');
     if (detectedRatios[prefix] != null) formData.append('aspectRatio', detectedRatios[prefix].toFixed(4));
 
     const xhr = new XMLHttpRequest();
@@ -529,6 +578,8 @@
       document.getElementById(descInputId).value = '';
       document.getElementById(descWrapId).classList.remove('visible');
       document.getElementById(posPillsId).querySelectorAll('[data-pos]').forEach(p => p.classList.toggle('active', p.dataset.pos === 'bottom'));
+      const linkEl = document.getElementById(prefix + 'LinkUrl');
+      if (linkEl) linkEl.value = '';
       detectedRatios[prefix] = null;
       if (xhr.status === 200) { showToast('Uploaded!', 'success'); loadLibrary(gridId, getApiEndpoint(prefix)); }
       else showToast('Upload failed. Try again.', 'error');
@@ -604,11 +655,21 @@
       });
       wrap.appendChild(posRow);
 
+      // Link URL editor
+      const linkRow = document.createElement('div');
+      linkRow.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-top:2px;';
+      const linkInput = document.createElement('input');
+      linkInput.type = 'url'; linkInput.placeholder = 'Link URL (optional)';
+      linkInput.value = item.linkUrl || '';
+      linkInput.style.cssText = 'flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.4rem 0.6rem;border-radius:5px;outline:none;';
+      linkRow.appendChild(linkInput);
+      wrap.appendChild(linkRow);
+
       const saveBtn = document.createElement('button');
       saveBtn.className = 'desc-save-btn'; saveBtn.textContent = 'Save';
       saveBtn.onclick = () => {
         const pos = posRow.querySelector('[data-card-pos].active')?.dataset.cardPos || 'bottom';
-        saveItemDesc(item.id, ta, pos, saveBtn, getPatchEndpoint(prefix));
+        saveItemDesc(item.id, ta, pos, linkInput.value.trim(), saveBtn, getPatchEndpoint(prefix));
       };
       wrap.appendChild(saveBtn);
 
@@ -616,10 +677,10 @@
     });
   }
 
-  async function saveItemDesc(id, textarea, textPosition, btn, endpoint) {
+  async function saveItemDesc(id, textarea, textPosition, linkUrl, btn, endpoint) {
     const orig = btn.textContent; btn.textContent = 'Saving…';
     try {
-      const res = await fetch(endpoint + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: textarea.value.trim(), textPosition }) });
+      const res = await fetch(endpoint + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: textarea.value.trim(), textPosition, linkUrl }) });
       if (!res.ok) throw new Error();
       btn.textContent = 'Saved ✓'; btn.classList.add('saved');
       setTimeout(() => { btn.textContent = orig; btn.classList.remove('saved'); }, 2000);

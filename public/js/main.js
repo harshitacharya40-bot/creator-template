@@ -1,10 +1,24 @@
+// ── Path → page key ────────────────────────────────────────────────────────
+function pathToKey(p) {
+  if (p === '/')          return 'home';
+  if (p === '/work')      return 'work';
+  if (p === '/services')  return 'services';
+  if (p === '/app')       return 'app';
+  if (p === '/store')     return 'store';
+  if (p === '/letstalk')  return 'letstalk';
+  return 'home';
+}
+
 // ── Apply config to page ───────────────────────────────────────────────────
 async function applyConfig() {
   const cfg = await fetch('/api/config').then(r => r.json());
 
-  // Creator name
-  const nameEl = document.getElementById('creatorName');
-  if (nameEl) nameEl.textContent = cfg.creatorName;
+  // Per-page title (or creator name as fallback)
+  const key       = pathToKey(window.location.pathname);
+  const titles    = cfg.pageTitles || {};
+  const pageTitle = (titles[key] !== undefined && titles[key] !== '') ? titles[key] : cfg.creatorName;
+  const nameEl    = document.getElementById('creatorName');
+  if (nameEl) nameEl.textContent = pageTitle;
 
   // Tab title
   document.title = cfg.creatorName;
@@ -27,8 +41,8 @@ async function applyConfig() {
   // Nav names
   const names = cfg.pageNames || {};
   document.querySelectorAll('nav a[data-page]').forEach(a => {
-    const key = a.dataset.page;
-    if (names[key]) a.textContent = names[key];
+    const k = a.dataset.page;
+    if (names[k]) a.textContent = names[k];
   });
 
   return cfg;
@@ -58,11 +72,24 @@ function createMuteBtn(video) {
   const btn = document.createElement('button');
   btn.className   = 'mute-btn';
   btn.textContent = 'UNMUTE';
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault(); e.stopPropagation();
     video.muted     = !video.muted;
     btn.textContent = video.muted ? 'UNMUTE' : 'MUTE';
   });
   return btn;
+}
+
+// ── Wrap element in link if linkUrl present ────────────────────────────────
+function wrapWithLink(el, linkUrl) {
+  if (!linkUrl) return el;
+  const a = document.createElement('a');
+  a.href   = linkUrl;
+  a.target = '_blank';
+  a.rel    = 'noopener';
+  a.style.cssText = 'display:block;width:100%;height:100%;position:relative;';
+  a.appendChild(el);
+  return a;
 }
 
 // ── IntersectionObserver ───────────────────────────────────────────────────
@@ -89,15 +116,29 @@ function renderWall(items) {
   sorted.forEach(item => {
     const wrap = document.createElement('div');
     wrap.className = 'media-item';
+
     if (item.type === 'video') {
       const v = document.createElement('video');
       v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
       v.setAttribute('preload', 'metadata');
-      wrap.appendChild(v); observeVideo(v); wrap.appendChild(createMuteBtn(v));
+      observeVideo(v);
+      if (item.linkUrl) {
+        // Video with link: clicking opens link, video still plays
+        v.style.cursor = 'pointer';
+        v.addEventListener('click', () => window.open(item.linkUrl, '_blank'));
+      }
+      wrap.appendChild(v);
+      wrap.appendChild(createMuteBtn(v));
     } else {
       const img = document.createElement('img');
       img.src = item.path; img.alt = ''; img.loading = 'lazy';
-      wrap.appendChild(img);
+      if (item.linkUrl) {
+        const a = document.createElement('a');
+        a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
+        a.appendChild(img); wrap.appendChild(a);
+      } else {
+        wrap.appendChild(img);
+      }
     }
     wall.appendChild(wrap);
   });
@@ -123,12 +164,25 @@ function renderRowPage(items, wallId, emptyMsg) {
       const v = document.createElement('video');
       v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
       v.setAttribute('preload', 'metadata');
-      vWrap.appendChild(v); observeVideo(v); vWrap.appendChild(createMuteBtn(v));
+      observeVideo(v);
+      if (item.linkUrl) {
+        v.style.cursor = 'pointer';
+        v.addEventListener('click', () => window.open(item.linkUrl, '_blank'));
+      }
+      vWrap.appendChild(v);
+      vWrap.appendChild(createMuteBtn(v));
     } else {
       const img = document.createElement('img');
       img.src = item.path; img.alt = ''; img.loading = 'lazy';
       img.style.cssText = 'width:100%;height:auto;display:block;';
-      vWrap.appendChild(img);
+      if (item.linkUrl) {
+        img.style.cursor = 'pointer';
+        const a = document.createElement('a');
+        a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
+        a.appendChild(img); vWrap.appendChild(a);
+      } else {
+        vWrap.appendChild(img);
+      }
     }
 
     const desc = document.createElement('div');
@@ -150,7 +204,6 @@ function renderServices(services) {
   const wrap = document.getElementById('servicesWrap');
   if (!wrap) return;
   if (!services.length) { wrap.innerHTML = '<p class="empty">No services listed yet.</p>'; return; }
-
   wrap.innerHTML = '';
   services.forEach((svc, i) => {
     const item = document.createElement('div');

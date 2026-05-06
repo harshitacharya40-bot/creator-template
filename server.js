@@ -27,7 +27,8 @@ if (!fs.existsSync('data/services.json')) {
   fs.writeFileSync('data/services.json', JSON.stringify(defaultServices, null, 2));
 }
 
-const defaultPageNames = { home: 'Home', work: 'Work', services: 'Services', app: 'App Store', store: 'Store', letstalk: "Let's Talk" };
+const defaultPageNames  = { home: 'Home', work: 'Work', services: 'Services', app: 'App Store', store: 'Store', letstalk: "Let's Talk" };
+const defaultPageTitles = { home: '', work: 'Work', services: 'Services', app: 'App Store', store: 'Store', letstalk: "Let's Talk" };
 
 if (!fs.existsSync('config.json')) {
   fs.writeFileSync('config.json', JSON.stringify({
@@ -37,6 +38,7 @@ if (!fs.existsSync('config.json')) {
     instagram:      'https://instagram.com/username',
     email:          'your@email.com',
     pageNames:      defaultPageNames,
+    pageTitles:     defaultPageTitles,
     adminUsername:  'LVCHLDSTUDIOS',
     adminPassword:  'LVCHLDSTUDIOS'
   }, null, 2));
@@ -44,13 +46,10 @@ if (!fs.existsSync('config.json')) {
   const cfg = JSON.parse(fs.readFileSync('config.json', 'utf8'));
   if (!cfg.adminUsername) cfg.adminUsername = 'LVCHLDSTUDIOS';
   if (!cfg.adminPassword) cfg.adminPassword = 'LVCHLDSTUDIOS';
-  if (!cfg.pageNames)     cfg.pageNames     = defaultPageNames;
-  else {
-    Object.keys(defaultPageNames).forEach(k => {
-      if (!cfg.pageNames[k]) cfg.pageNames[k] = defaultPageNames[k];
-    });
-  }
-  // Remove old footer link fields if present
+  if (!cfg.pageNames)  cfg.pageNames  = defaultPageNames;
+  else Object.keys(defaultPageNames).forEach(k => { if (!cfg.pageNames[k])  cfg.pageNames[k]  = defaultPageNames[k]; });
+  if (!cfg.pageTitles) cfg.pageTitles = defaultPageTitles;
+  else Object.keys(defaultPageTitles).forEach(k => { if (cfg.pageTitles[k] === undefined) cfg.pageTitles[k] = defaultPageTitles[k]; });
   delete cfg.appStoreLink;
   delete cfg.storeLink;
   fs.writeFileSync('config.json', JSON.stringify(cfg, null, 2));
@@ -120,6 +119,7 @@ function makeMediaEntry(req) {
     description:  req.body.description  || '',
     textPosition: req.body.textPosition || 'bottom',
     aspectRatio:  req.body.aspectRatio  ? parseFloat(req.body.aspectRatio) : 0,
+    linkUrl:      req.body.linkUrl      || '',
     uploadedAt:   new Date().toISOString()
   };
 }
@@ -151,12 +151,13 @@ app.get('/admin/logout', (req, res) => { req.session.destroy(); res.redirect('/a
 app.post('/api/config', requireAuth, (req, res) => {
   const cfg = readConfig();
   const { creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
-          pageNames, adminUsername, adminPassword } = req.body;
+          pageNames, pageTitles, adminUsername, adminPassword } = req.body;
   if (!creatorName || !email) return res.status(400).json({ error: 'creatorName and email are required' });
   writeConfig({
     ...cfg,
     creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
-    pageNames: pageNames || cfg.pageNames,
+    pageNames:   pageNames   || cfg.pageNames,
+    pageTitles:  pageTitles  || cfg.pageTitles,
     adminUsername: adminUsername || cfg.adminUsername,
     adminPassword: adminPassword || cfg.adminPassword
   });
@@ -199,6 +200,7 @@ app.patch('/api/media/:id', requireAuth, (req, res) => {
   if (!item) return res.status(404).json({ error: 'Not found' });
   if (req.body.description  !== undefined) item.description  = req.body.description;
   if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
+  if (req.body.linkUrl      !== undefined) item.linkUrl      = req.body.linkUrl;
   writeMedia(media); res.json({ ok: true });
 });
 app.delete('/api/media/:id', requireAuth, (req, res) => {
@@ -220,6 +222,7 @@ app.patch('/api/app-media/:id', requireAuth, (req, res) => {
   if (!item) return res.status(404).json({ error: 'Not found' });
   if (req.body.description  !== undefined) item.description  = req.body.description;
   if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
+  if (req.body.linkUrl      !== undefined) item.linkUrl      = req.body.linkUrl;
   writeAppMedia(media); res.json({ ok: true });
 });
 app.delete('/api/app-media/:id', requireAuth, (req, res) => {
@@ -241,6 +244,7 @@ app.patch('/api/store-media/:id', requireAuth, (req, res) => {
   if (!item) return res.status(404).json({ error: 'Not found' });
   if (req.body.description  !== undefined) item.description  = req.body.description;
   if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
+  if (req.body.linkUrl      !== undefined) item.linkUrl      = req.body.linkUrl;
   writeStoreMedia(media); res.json({ ok: true });
 });
 app.delete('/api/store-media/:id', requireAuth, (req, res) => {
