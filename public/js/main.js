@@ -24,55 +24,25 @@ async function applyConfig() {
   document.documentElement.style.setProperty('--btn-fs',      sizeMap[sz]    || sizeMap.medium);
   document.documentElement.style.setProperty('--btn-padding', paddingMap[sz] || paddingMap.medium);
 
+  // Nav names
+  const names = cfg.pageNames || {};
+  document.querySelectorAll('nav a[data-page]').forEach(a => {
+    const key = a.dataset.page;
+    if (names[key]) a.textContent = names[key];
+  });
+
   return cfg;
 }
 
 // ── Active nav link ────────────────────────────────────────────────────────
 function setActiveNav() {
-  const path = window.location.pathname;
+  const p = window.location.pathname;
   document.querySelectorAll('nav a').forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === path);
+    a.classList.toggle('active', a.getAttribute('href') === p);
   });
 }
 
-// ── Render footer ──────────────────────────────────────────────────────────
-function renderFooter(cfg) {
-  const footer = document.getElementById('siteFooter');
-  if (!footer) return;
-
-  const links = [];
-
-  if (cfg.appStoreLink) {
-    links.push(`
-      <a class="footer-link" href="${cfg.appStoreLink}" target="_blank" rel="noopener">
-        <span class="footer-link-label">App Store</span>
-        <span class="footer-link-name">Download App</span>
-      </a>
-    `);
-  }
-
-  if (cfg.storeLink) {
-    const storeName = cfg.storeLink.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-    links.push(`
-      <a class="footer-link" href="${cfg.storeLink}" target="_blank" rel="noopener">
-        <span class="footer-link-label">Online Store</span>
-        <span class="footer-link-name">${storeName}</span>
-      </a>
-    `);
-  }
-
-  if (!links.length) {
-    footer.style.display = 'none';
-    return;
-  }
-
-  footer.innerHTML = `
-    <div class="footer-links">${links.join('')}</div>
-    <span class="footer-copy">${cfg.creatorName || ''}</span>
-  `;
-}
-
-// ── Sort: 16:9 (wide) first, then everything else ─────────────────────────
+// ── Sort: 16:9 (wide) first ────────────────────────────────────────────────
 function sortByAspect(items) {
   return [...items].sort((a, b) => {
     const aWide = (a.aspectRatio || 0) >= 1.6;
@@ -87,7 +57,7 @@ function sortByAspect(items) {
 function createMuteBtn(video) {
   const btn = document.createElement('button');
   btn.className   = 'mute-btn';
-  btn.textContent = 'UNMUTE';          // videos start muted
+  btn.textContent = 'UNMUTE';
   btn.addEventListener('click', () => {
     video.muted     = !video.muted;
     btn.textContent = video.muted ? 'UNMUTE' : 'MUTE';
@@ -95,27 +65,21 @@ function createMuteBtn(video) {
   return btn;
 }
 
-// ── IntersectionObserver — play only when visible ─────────────────────────
+// ── IntersectionObserver ───────────────────────────────────────────────────
 const videoObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) e.target.play().catch(() => {});
     else                  e.target.pause();
   });
 }, { threshold: 0.15 });
-
 function observeVideo(v) { videoObserver.observe(v); }
 
-// ── HOME — masonry wall (videos + photos, wide videos first) ───────────────
+// ── HOME — masonry wall ────────────────────────────────────────────────────
 function renderWall(items) {
   const wall = document.getElementById('mediaWall');
   if (!wall) return;
+  if (!items.length) { wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>'; return; }
 
-  if (!items.length) {
-    wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>';
-    return;
-  }
-
-  // Sort: wide videos first, then narrow videos, then photos
   const sorted = [
     ...sortByAspect(items.filter(i => i.type === 'video')),
     ...items.filter(i => i.type === 'photo')
@@ -125,77 +89,57 @@ function renderWall(items) {
   sorted.forEach(item => {
     const wrap = document.createElement('div');
     wrap.className = 'media-item';
-
     if (item.type === 'video') {
       const v = document.createElement('video');
-      v.src         = item.path;
-      v.muted       = true;
-      v.loop        = true;
-      v.playsInline = true;
+      v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
       v.setAttribute('preload', 'metadata');
-      wrap.appendChild(v);
-      observeVideo(v);
-      wrap.appendChild(createMuteBtn(v));
+      wrap.appendChild(v); observeVideo(v); wrap.appendChild(createMuteBtn(v));
     } else {
-      const img   = document.createElement('img');
-      img.src     = item.path;
-      img.alt     = '';
-      img.loading = 'lazy';
+      const img = document.createElement('img');
+      img.src = item.path; img.alt = ''; img.loading = 'lazy';
       wrap.appendChild(img);
     }
-
     wall.appendChild(wrap);
   });
 }
 
-// ── WORK — one row per video, centered, text top or bottom ────────────────
-function renderWorkPage(videos) {
-  const wall = document.getElementById('mediaWall');
+// ── WORK / APP / STORE — row layout ───────────────────────────────────────
+function renderRowPage(items, wallId, emptyMsg) {
+  const wall = document.getElementById(wallId);
   if (!wall) return;
+  if (!items.length) { wall.innerHTML = `<p class="empty">${emptyMsg}</p>`; return; }
 
-  if (!videos.length) {
-    wall.innerHTML = '<p class="empty">No videos yet — upload from the admin panel.</p>';
-    return;
-  }
-
-  const sorted = sortByAspect(videos);
-
+  const sorted = sortByAspect(items);
   wall.innerHTML = '';
+
   sorted.forEach(item => {
     const row = document.createElement('div');
     row.className = 'work-row';
 
-    // Video block
     const vWrap = document.createElement('div');
     vWrap.className = 'work-video-wrap';
 
-    const v = document.createElement('video');
-    v.src         = item.path;
-    v.muted       = true;
-    v.loop        = true;
-    v.playsInline = true;
-    v.setAttribute('preload', 'metadata');
-    vWrap.appendChild(v);
-    observeVideo(v);
-    vWrap.appendChild(createMuteBtn(v));
+    if (item.type === 'video') {
+      const v = document.createElement('video');
+      v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
+      v.setAttribute('preload', 'metadata');
+      vWrap.appendChild(v); observeVideo(v); vWrap.appendChild(createMuteBtn(v));
+    } else {
+      const img = document.createElement('img');
+      img.src = item.path; img.alt = ''; img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:auto;display:block;';
+      vWrap.appendChild(img);
+    }
 
-    // Description block
     const desc = document.createElement('div');
     desc.className   = 'work-desc';
     desc.textContent = item.description || '';
 
-    // layout class + ordering
     const layout = item.textPosition || 'bottom';
     row.classList.add('layout-' + layout);
 
-    if (layout === 'top') {
-      row.appendChild(desc);
-      row.appendChild(vWrap);
-    } else {
-      // 'bottom' and 'side' both put video first
-      row.appendChild(vWrap);
-      row.appendChild(desc);
-    }
+    if (layout === 'top') { row.appendChild(desc); row.appendChild(vWrap); }
+    else                  { row.appendChild(vWrap); row.appendChild(desc); }
 
     wall.appendChild(row);
   });
@@ -205,11 +149,7 @@ function renderWorkPage(videos) {
 function renderServices(services) {
   const wrap = document.getElementById('servicesWrap');
   if (!wrap) return;
-
-  if (!services.length) {
-    wrap.innerHTML = '<p class="empty">No services listed yet.</p>';
-    return;
-  }
+  if (!services.length) { wrap.innerHTML = '<p class="empty">No services listed yet.</p>'; return; }
 
   wrap.innerHTML = '';
   services.forEach((svc, i) => {
@@ -228,11 +168,9 @@ function renderServices(services) {
 function renderContact(cfg) {
   const wrap = document.getElementById('contactWrap');
   if (!wrap) return;
-
   const handle = cfg.instagram
     ? cfg.instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/$/, '')
     : '';
-
   wrap.innerHTML = `
     <div class="contact-block">
       <p class="contact-label">Instagram</p>
@@ -252,27 +190,34 @@ async function initHome() {
   const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/media').then(r => r.json())]);
   setActiveNav();
   renderWall(media);
-  renderFooter(cfg);
 }
 
 async function initWork() {
   const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/media').then(r => r.json())]);
   setActiveNav();
-  const videos = media.filter(m => m.type === 'video');
-  renderWorkPage(videos);
-  renderFooter(cfg);
+  renderRowPage(media.filter(m => m.type === 'video'), 'mediaWall', 'No videos yet — upload from the admin panel.');
 }
 
 async function initServices() {
   const [cfg, services] = await Promise.all([applyConfig(), fetch('/api/services').then(r => r.json())]);
   setActiveNav();
   renderServices(services);
-  renderFooter(cfg);
+}
+
+async function initApp() {
+  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/app-media').then(r => r.json())]);
+  setActiveNav();
+  renderRowPage(media, 'mediaWall', 'No content yet — upload from the admin panel.');
+}
+
+async function initStore() {
+  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/store-media').then(r => r.json())]);
+  setActiveNav();
+  renderRowPage(media, 'mediaWall', 'No content yet — upload from the admin panel.');
 }
 
 async function initLetsTalk() {
   const cfg = await applyConfig();
   setActiveNav();
   renderContact(cfg);
-  renderFooter(cfg);
 }

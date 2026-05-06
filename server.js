@@ -13,9 +13,9 @@ const PORT = process.env.PORT || 3000;
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-if (!fs.existsSync('data/media.json')) {
-  fs.writeFileSync('data/media.json', '[]');
-}
+if (!fs.existsSync('data/media.json'))       fs.writeFileSync('data/media.json',       '[]');
+if (!fs.existsSync('data/app-media.json'))   fs.writeFileSync('data/app-media.json',   '[]');
+if (!fs.existsSync('data/store-media.json')) fs.writeFileSync('data/store-media.json', '[]');
 
 const defaultServices = [
   { id: uuidv4(), title: 'Professional AI Videos & Assets',                    description: 'Cutting-edge AI-generated visuals crafted to elevate your brand. From concept to final render, every frame is built with purpose and precision.' },
@@ -23,10 +23,11 @@ const defaultServices = [
   { id: uuidv4(), title: 'Creative Direction & Consultation',                   description: 'Strategic vision for your visual identity. We guide projects from concept to execution, ensuring every creative decision aligns with your brand.' },
   { id: uuidv4(), title: 'Imaging & Visualizers for Brands, Artists & Labels',  description: 'Bespoke visual content for brands, recording artists, and labels. Immersive imagery and motion visuals designed to make a lasting impression.' }
 ];
-
 if (!fs.existsSync('data/services.json')) {
   fs.writeFileSync('data/services.json', JSON.stringify(defaultServices, null, 2));
 }
+
+const defaultPageNames = { home: 'Home', work: 'Work', services: 'Services', app: 'App Store', store: 'Store', letstalk: "Let's Talk" };
 
 if (!fs.existsSync('config.json')) {
   fs.writeFileSync('config.json', JSON.stringify({
@@ -35,27 +36,37 @@ if (!fs.existsSync('config.json')) {
     backgroundColor:'#000000',
     instagram:      'https://instagram.com/username',
     email:          'your@email.com',
-    appStoreLink:   '',
-    storeLink:      '',
+    pageNames:      defaultPageNames,
     adminUsername:  'LVCHLDSTUDIOS',
     adminPassword:  'LVCHLDSTUDIOS'
   }, null, 2));
 } else {
   const cfg = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-  if (!cfg.adminUsername)            cfg.adminUsername = 'LVCHLDSTUDIOS';
-  if (!cfg.adminPassword)            cfg.adminPassword = 'LVCHLDSTUDIOS';
-  if (cfg.appStoreLink === undefined) cfg.appStoreLink = '';
-  if (cfg.storeLink    === undefined) cfg.storeLink    = '';
+  if (!cfg.adminUsername) cfg.adminUsername = 'LVCHLDSTUDIOS';
+  if (!cfg.adminPassword) cfg.adminPassword = 'LVCHLDSTUDIOS';
+  if (!cfg.pageNames)     cfg.pageNames     = defaultPageNames;
+  else {
+    Object.keys(defaultPageNames).forEach(k => {
+      if (!cfg.pageNames[k]) cfg.pageNames[k] = defaultPageNames[k];
+    });
+  }
+  // Remove old footer link fields if present
+  delete cfg.appStoreLink;
+  delete cfg.storeLink;
   fs.writeFileSync('config.json', JSON.stringify(cfg, null, 2));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function readMedia()      { return JSON.parse(fs.readFileSync('data/media.json',    'utf8')); }
-function writeMedia(d)    { fs.writeFileSync('data/media.json',    JSON.stringify(d, null, 2)); }
-function readConfig()     { return JSON.parse(fs.readFileSync('config.json',        'utf8')); }
-function writeConfig(d)   { fs.writeFileSync('config.json',        JSON.stringify(d, null, 2)); }
-function readServices()   { return JSON.parse(fs.readFileSync('data/services.json', 'utf8')); }
-function writeServices(d) { fs.writeFileSync('data/services.json', JSON.stringify(d, null, 2)); }
+function readMedia()         { return JSON.parse(fs.readFileSync('data/media.json',       'utf8')); }
+function writeMedia(d)       { fs.writeFileSync('data/media.json',       JSON.stringify(d, null, 2)); }
+function readAppMedia()      { return JSON.parse(fs.readFileSync('data/app-media.json',   'utf8')); }
+function writeAppMedia(d)    { fs.writeFileSync('data/app-media.json',   JSON.stringify(d, null, 2)); }
+function readStoreMedia()    { return JSON.parse(fs.readFileSync('data/store-media.json', 'utf8')); }
+function writeStoreMedia(d)  { fs.writeFileSync('data/store-media.json', JSON.stringify(d, null, 2)); }
+function readConfig()        { return JSON.parse(fs.readFileSync('config.json',           'utf8')); }
+function writeConfig(d)      { fs.writeFileSync('config.json',           JSON.stringify(d, null, 2)); }
+function readServices()      { return JSON.parse(fs.readFileSync('data/services.json',    'utf8')); }
+function writeServices(d)    { fs.writeFileSync('data/services.json',    JSON.stringify(d, null, 2)); }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -64,7 +75,7 @@ app.use(session({
   secret: 'lvchld-secret-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -76,116 +87,30 @@ function requireAuth(req, res, next) {
   res.redirect('/admin/login');
 }
 
-// ── Multer (file uploads) ─────────────────────────────────────────────────────
+// ── Multer ────────────────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     const folder = file.mimetype.startsWith('video/') ? 'videos' : 'photos';
     cb(null, path.join(__dirname, 'uploads', folder));
   },
   filename(req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, uuidv4() + ext);
+    cb(null, uuidv4() + path.extname(file.originalname).toLowerCase());
   }
 });
-
 const upload = multer({
   storage,
   limits: { fileSize: 2 * 1024 * 1024 * 1024 },
   fileFilter(req, file, cb) {
-    const allowed = [
-      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
-      'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo'
-    ];
+    const allowed = ['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/quicktime','video/webm','video/x-msvideo'];
     if (allowed.includes(file.mimetype)) return cb(null, true);
     cb(new Error('Only images and videos are allowed'));
   }
 });
 
-// ── Public API ────────────────────────────────────────────────────────────────
-app.get('/api/config', (req, res) => {
-  const cfg = readConfig();
-  const { adminUsername, adminPassword, ...publicCfg } = cfg;
-  res.json(publicCfg);
-});
-app.get('/api/media',    (req, res) => res.json(readMedia()));
-app.get('/api/services', (req, res) => res.json(readServices()));
-
-// ── Admin login / logout ──────────────────────────────────────────────────────
-app.get('/admin/login', (req, res) => {
-  if (req.session && req.session.loggedIn) return res.redirect('/admin');
-  res.sendFile(path.join(__dirname, 'admin/login.html'));
-});
-
-app.post('/admin/login', (req, res) => {
-  const cfg = readConfig();
-  const { username, password } = req.body;
-  if (username === cfg.adminUsername && password === cfg.adminPassword) {
-    req.session.loggedIn = true;
-    res.redirect('/admin');
-  } else {
-    res.redirect('/admin/login?error=1');
-  }
-});
-
-app.get('/admin/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/admin/login');
-});
-
-// ── Admin API (protected) ─────────────────────────────────────────────────────
-app.post('/api/config', requireAuth, (req, res) => {
-  const cfg = readConfig();
-  const { creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
-          appStoreLink, storeLink, adminUsername, adminPassword } = req.body;
-  if (!creatorName || !email) {
-    return res.status(400).json({ error: 'creatorName and email are required' });
-  }
-  writeConfig({
-    ...cfg,
-    creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
-    appStoreLink: appStoreLink || '',
-    storeLink:    storeLink    || '',
-    adminUsername: adminUsername || cfg.adminUsername,
-    adminPassword: adminPassword || cfg.adminPassword
-  });
-  res.json({ ok: true });
-});
-
-// Services CRUD
-app.post('/api/services', requireAuth, (req, res) => {
-  const services = readServices();
-  const entry = {
-    id:          uuidv4(),
-    title:       req.body.title       || '',
-    description: req.body.description || ''
-  };
-  services.push(entry);
-  writeServices(services);
-  res.json({ ok: true, item: entry });
-});
-
-app.patch('/api/services/:id', requireAuth, (req, res) => {
-  const services = readServices();
-  const item = services.find(s => s.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  if (req.body.title       !== undefined) item.title       = req.body.title;
-  if (req.body.description !== undefined) item.description = req.body.description;
-  writeServices(services);
-  res.json({ ok: true });
-});
-
-app.delete('/api/services/:id', requireAuth, (req, res) => {
-  const services = readServices();
-  const item = services.find(s => s.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  writeServices(services.filter(s => s.id !== req.params.id));
-  res.json({ ok: true });
-});
-
-app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file received' });
+// ── Generic media upload helper ───────────────────────────────────────────────
+function makeMediaEntry(req) {
   const isVideo = req.file.mimetype.startsWith('video/');
-  const entry = {
+  return {
     id:           uuidv4(),
     type:         isVideo ? 'video' : 'photo',
     filename:     req.file.filename,
@@ -197,41 +122,145 @@ app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
     aspectRatio:  req.body.aspectRatio  ? parseFloat(req.body.aspectRatio) : 0,
     uploadedAt:   new Date().toISOString()
   };
-  const media = readMedia();
-  media.unshift(entry);
-  writeMedia(media);
-  res.json({ ok: true, item: entry });
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+app.get('/api/config',      (req, res) => { const { adminUsername, adminPassword, ...pub } = readConfig(); res.json(pub); });
+app.get('/api/media',       (req, res) => res.json(readMedia()));
+app.get('/api/services',    (req, res) => res.json(readServices()));
+app.get('/api/app-media',   (req, res) => res.json(readAppMedia()));
+app.get('/api/store-media', (req, res) => res.json(readStoreMedia()));
+
+// ── Admin login / logout ──────────────────────────────────────────────────────
+app.get('/admin/login', (req, res) => {
+  if (req.session && req.session.loggedIn) return res.redirect('/admin');
+  res.sendFile(path.join(__dirname, 'admin/login.html'));
+});
+app.post('/admin/login', (req, res) => {
+  const cfg = readConfig();
+  const { username, password } = req.body;
+  if (username === cfg.adminUsername && password === cfg.adminPassword) {
+    req.session.loggedIn = true; res.redirect('/admin');
+  } else {
+    res.redirect('/admin/login?error=1');
+  }
+});
+app.get('/admin/logout', (req, res) => { req.session.destroy(); res.redirect('/admin/login'); });
+
+// ── Admin API — Config ────────────────────────────────────────────────────────
+app.post('/api/config', requireAuth, (req, res) => {
+  const cfg = readConfig();
+  const { creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
+          pageNames, adminUsername, adminPassword } = req.body;
+  if (!creatorName || !email) return res.status(400).json({ error: 'creatorName and email are required' });
+  writeConfig({
+    ...cfg,
+    creatorName, accentColor, backgroundColor, instagram, email, muteBtn,
+    pageNames: pageNames || cfg.pageNames,
+    adminUsername: adminUsername || cfg.adminUsername,
+    adminPassword: adminPassword || cfg.adminPassword
+  });
+  res.json({ ok: true });
 });
 
+// ── Admin API — Services ──────────────────────────────────────────────────────
+app.post('/api/services', requireAuth, (req, res) => {
+  const services = readServices();
+  const entry = { id: uuidv4(), title: req.body.title || '', description: req.body.description || '' };
+  services.push(entry);
+  writeServices(services);
+  res.json({ ok: true, item: entry });
+});
+app.patch('/api/services/:id', requireAuth, (req, res) => {
+  const services = readServices();
+  const item = services.find(s => s.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  if (req.body.title       !== undefined) item.title       = req.body.title;
+  if (req.body.description !== undefined) item.description = req.body.description;
+  writeServices(services);
+  res.json({ ok: true });
+});
+app.delete('/api/services/:id', requireAuth, (req, res) => {
+  const services = readServices();
+  if (!services.find(s => s.id === req.params.id)) return res.status(404).json({ error: 'Not found' });
+  writeServices(services.filter(s => s.id !== req.params.id));
+  res.json({ ok: true });
+});
+
+// ── Admin API — Main media ────────────────────────────────────────────────────
+app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received' });
+  const entry = makeMediaEntry(req);
+  const media = readMedia(); media.unshift(entry); writeMedia(media);
+  res.json({ ok: true, item: entry });
+});
 app.patch('/api/media/:id', requireAuth, (req, res) => {
-  const media = readMedia();
-  const item  = media.find(m => m.id === req.params.id);
+  const media = readMedia(); const item = media.find(m => m.id === req.params.id);
   if (!item) return res.status(404).json({ error: 'Not found' });
   if (req.body.description  !== undefined) item.description  = req.body.description;
   if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
-  writeMedia(media);
-  res.json({ ok: true });
+  writeMedia(media); res.json({ ok: true });
 });
-
 app.delete('/api/media/:id', requireAuth, (req, res) => {
-  const media = readMedia();
-  const item  = media.find(m => m.id === req.params.id);
+  const media = readMedia(); const item = media.find(m => m.id === req.params.id);
   if (!item) return res.status(404).json({ error: 'Not found' });
-  const filePath = path.join(__dirname, item.path);
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  writeMedia(media.filter(m => m.id !== req.params.id));
-  res.json({ ok: true });
+  const fp = path.join(__dirname, item.path); if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  writeMedia(media.filter(m => m.id !== req.params.id)); res.json({ ok: true });
 });
 
-// ── Admin pages (protected) ───────────────────────────────────────────────────
+// ── Admin API — App page media ────────────────────────────────────────────────
+app.post('/api/app-media/upload', requireAuth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received' });
+  const entry = makeMediaEntry(req);
+  const media = readAppMedia(); media.unshift(entry); writeAppMedia(media);
+  res.json({ ok: true, item: entry });
+});
+app.patch('/api/app-media/:id', requireAuth, (req, res) => {
+  const media = readAppMedia(); const item = media.find(m => m.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  if (req.body.description  !== undefined) item.description  = req.body.description;
+  if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
+  writeAppMedia(media); res.json({ ok: true });
+});
+app.delete('/api/app-media/:id', requireAuth, (req, res) => {
+  const media = readAppMedia(); const item = media.find(m => m.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  const fp = path.join(__dirname, item.path); if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  writeAppMedia(media.filter(m => m.id !== req.params.id)); res.json({ ok: true });
+});
+
+// ── Admin API — Store page media ──────────────────────────────────────────────
+app.post('/api/store-media/upload', requireAuth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received' });
+  const entry = makeMediaEntry(req);
+  const media = readStoreMedia(); media.unshift(entry); writeStoreMedia(media);
+  res.json({ ok: true, item: entry });
+});
+app.patch('/api/store-media/:id', requireAuth, (req, res) => {
+  const media = readStoreMedia(); const item = media.find(m => m.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  if (req.body.description  !== undefined) item.description  = req.body.description;
+  if (req.body.textPosition !== undefined) item.textPosition = req.body.textPosition;
+  writeStoreMedia(media); res.json({ ok: true });
+});
+app.delete('/api/store-media/:id', requireAuth, (req, res) => {
+  const media = readStoreMedia(); const item = media.find(m => m.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  const fp = path.join(__dirname, item.path); if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  writeStoreMedia(media.filter(m => m.id !== req.params.id)); res.json({ ok: true });
+});
+
+// ── Admin pages ───────────────────────────────────────────────────────────────
 app.get('/admin',  requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'admin/index.html')));
 app.get('/admin/', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'admin/index.html')));
 
 // ── Public page routes ────────────────────────────────────────────────────────
-app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/work',      (req, res) => res.sendFile(path.join(__dirname, 'public/work.html')));
-app.get('/services',  (req, res) => res.sendFile(path.join(__dirname, 'public/services.html')));
-app.get('/letstalk',  (req, res) => res.sendFile(path.join(__dirname, 'public/letstalk.html')));
+app.get('/',         (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
+app.get('/work',     (req, res) => res.sendFile(path.join(__dirname, 'public/work.html')));
+app.get('/services', (req, res) => res.sendFile(path.join(__dirname, 'public/services.html')));
+app.get('/app',      (req, res) => res.sendFile(path.join(__dirname, 'public/app.html')));
+app.get('/store',    (req, res) => res.sendFile(path.join(__dirname, 'public/store.html')));
+app.get('/letstalk', (req, res) => res.sendFile(path.join(__dirname, 'public/letstalk.html')));
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
