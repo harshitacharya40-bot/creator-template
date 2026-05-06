@@ -4,531 +4,712 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
       --bg:      #0a0a0a;
       --surface: #141414;
-      --border:  #222;
+      --surface2:#1c1c1c;
+      --border:  #252525;
       --text:    #f0f0f0;
       --muted:   #666;
+      --dim:     #333;
       --green:   #22c55e;
       --red:     #ef4444;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; font-size:14px; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-    header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
-    header h1 { font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-    header a  { color: var(--muted); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
-    header a:hover { color: var(--text); }
-
-    main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 8rem; display: flex; flex-direction: column; gap: 3rem; }
-
-    section { display: flex; flex-direction: column; gap: 1.25rem; }
-    .section-title { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
-
-    .field { display: flex; flex-direction: column; gap: 0.4rem; }
-    .field label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
-    .field input[type="text"], .field input[type="email"], .field input[type="url"], .field textarea {
-      background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border-radius: 6px; outline: none; transition: border-color 0.2s; width: 100%;
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.9rem 1.75rem; border-bottom:1px solid var(--border);
+      background:var(--bg); position:sticky; top:0; z-index:100;
     }
-    .field textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-    .field input:focus, .field textarea:focus { border-color: #444; }
+    .h-logo { font-size:0.82rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+    .h-links { display:flex; gap:1.5rem; }
+    .h-links a { color:var(--muted); text-decoration:none; font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase; transition:color .15s; }
+    .h-links a:hover { color:var(--text); }
 
-    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 560px) { .fields-row { grid-template-columns: 1fr; } }
-
-    .color-row { display: flex; align-items: center; gap: 0.75rem; }
-    .color-row input[type="color"] { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; padding: 2px; flex-shrink: 0; }
-    .color-row input[type="text"] { flex: 1; }
-
-    .size-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .size-pill { padding: 0.45rem 1.1rem; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
-    .size-pill:hover  { border-color: #555; color: var(--text); }
-    .size-pill.active { border-color: #fff; color: #fff; }
-
-    .upload-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-    .upload-hint { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
-    .file-pick-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .file-label { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.2rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s; }
-    .file-label:hover { border-color: #555; }
-    .file-name { font-size: 0.82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
-
-    .desc-wrap { display: none; flex-direction: column; gap: 0.4rem; }
-    .desc-wrap.visible { display: flex; }
-    .desc-wrap label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
-    .desc-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.9rem; padding: 0.65rem 0.8rem; border-radius: 6px; outline: none; resize: vertical; min-height: 80px; line-height: 1.6; transition: border-color 0.2s; width: 100%; }
-    .desc-input:focus { border-color: #444; }
-    .desc-input::placeholder { color: #444; }
-
-    .progress-wrap { display: none; flex-direction: column; gap: 0.4rem; }
-    .progress-wrap.visible { display: flex; }
-    .progress-bar-bg { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: #fff; border-radius: 99px; width: 0%; transition: width 0.2s; }
-    .progress-text { font-size: 0.75rem; color: var(--muted); }
-
-    .upload-btn { background: #fff; color: #000; border: none; padding: 0.65rem 1.6rem; border-radius: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; letter-spacing: 0.03em; transition: opacity 0.2s; align-self: flex-start; }
-    .upload-btn:hover    { opacity: 0.85; }
-    .upload-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-    .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .media-card-wrap { display: flex; flex-direction: column; gap: 6px; }
-    .media-thumb { position: relative; background: var(--surface); border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; }
-    .media-thumb.square { aspect-ratio: 1 / 1; }
-    .media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .badge { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.75); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
-    .delete-btn { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.75); border: none; color: #fff; width: 26px; height: 26px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s, background 0.15s; }
-    .media-thumb:hover .delete-btn { opacity: 1; }
-    .delete-btn:hover { background: var(--red); }
-    .card-desc { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.8rem; padding: 0.5rem 0.65rem; border-radius: 5px; resize: vertical; min-height: 58px; outline: none; line-height: 1.5; transition: border-color 0.2s; width: 100%; }
-    .card-desc:focus { border-color: #444; }
-    .card-desc::placeholder { color: #333; }
-    .desc-save-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.7rem; font-family: inherit; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; align-self: flex-end; }
-    .desc-save-btn:hover { border-color: #888; color: var(--text); }
-    .desc-save-btn.saved { border-color: var(--green); color: var(--green); }
-    .library-empty { color: var(--muted); font-size: 0.85rem; padding: 2rem 0; }
-
-    #toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(4px); background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.65rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; z-index: 999; white-space: nowrap; }
-    #toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.success { border-color: var(--green); color: var(--green); }
-    #toast.error   { border-color: var(--red);   color: var(--red);   }
-
-    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; z-index: 200; }
-    .save-bar p { font-size: 0.82rem; color: var(--muted); }
-    .btn-save { background: #fff; color: #000; border: none; padding: 0.75rem 2.5rem; font-size: 1rem; font-weight: 700; font-family: inherit; border-radius: 6px; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s, transform 0.1s; min-width: 140px; }
-    .btn-save:hover   { opacity: 0.85; }
-    .btn-save:active  { transform: scale(0.97); }
-    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-save.saved   { background: var(--green); color: #fff; }
-
-    @media (max-width: 600px) {
-      main { padding: 1.5rem 1rem 8rem; }
-      header { padding: 1rem; }
-      .library-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-      .save-bar { padding: 0.75rem 1rem; }
-      .save-bar p { display: none; }
-      .btn-save { width: 100%; }
+    /* ── Tab nav ─────────────────────────────────────────────────────────── */
+    .tab-nav {
+      display:flex; border-bottom:1px solid var(--border);
+      background:var(--bg); position:sticky; top:49px; z-index:99;
+      overflow-x:auto; scrollbar-width:none;
     }
+    .tab-nav::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      background:transparent; border:none; border-bottom:2px solid transparent;
+      color:var(--muted); font-family:inherit; font-size:0.75rem; font-weight:600;
+      letter-spacing:0.07em; padding:0.9rem 1.35rem; cursor:pointer;
+      white-space:nowrap; transition:color .15s, border-color .15s; text-transform:uppercase;
+    }
+    .tab-btn:hover { color:var(--text); }
+    .tab-btn.active { color:var(--text); border-bottom-color:#fff; }
+
+    /* ── Tab panels ──────────────────────────────────────────────────────── */
+    .tab-panel { display:none; flex-direction:column; gap:1.75rem; max-width:800px; margin:0 auto; padding:2rem 1.75rem 8rem; }
+    .tab-panel.active { display:flex; }
+
+    /* ── Section label ───────────────────────────────────────────────────── */
+    .sec { display:flex; flex-direction:column; gap:1rem; }
+    .sec-label { font-size:0.65rem; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+
+    /* ── Card ────────────────────────────────────────────────────────────── */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.5rem; display:flex; flex-direction:column; gap:1.1rem; }
+
+    /* ── Fields ──────────────────────────────────────────────────────────── */
+    .field { display:flex; flex-direction:column; gap:0.35rem; }
+    .field label { font-size:0.72rem; color:var(--muted); font-weight:500; }
+    .fi {
+      background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      font-family:inherit; font-size:0.9rem; padding:0.65rem 0.85rem;
+      border-radius:7px; outline:none; transition:border-color .15s; width:100%;
+    }
+    .fi:focus { border-color:#3a3a3a; }
+    .fi::placeholder { color:var(--dim); }
+    textarea.fi { resize:vertical; min-height:76px; line-height:1.6; }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media(max-width:540px){ .row2 { grid-template-columns:1fr; } }
+
+    /* ── Color row ───────────────────────────────────────────────────────── */
+    .color-row { display:flex; align-items:center; gap:0.7rem; }
+    .color-row input[type="color"] { width:42px; height:42px; border:1px solid var(--border); border-radius:7px; background:var(--surface2); cursor:pointer; padding:3px; flex-shrink:0; }
+    .color-row .fi { flex:1; }
+
+    /* ── Pills ───────────────────────────────────────────────────────────── */
+    .pills { display:flex; gap:0.4rem; flex-wrap:wrap; }
+    .pill { padding:0.38rem 0.9rem; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:0.75rem; cursor:pointer; transition:all .15s; }
+    .pill:hover { border-color:#555; color:var(--text); }
+    .pill.active { border-color:#fff; color:#fff; background:rgba(255,255,255,0.06); }
+
+    /* ── Pages table ─────────────────────────────────────────────────────── */
+    .pg-table { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .pg-head { display:grid; grid-template-columns:130px 1fr 1fr; background:var(--surface2); border-bottom:1px solid var(--border); }
+    .pg-head span { font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:0.7rem 1rem; }
+    .pg-row { display:grid; grid-template-columns:130px 1fr 1fr; border-bottom:1px solid var(--border); }
+    .pg-row:last-child { border-bottom:none; }
+    .pg-cell { padding:0.6rem 0.85rem; display:flex; align-items:center; background:var(--surface); }
+    .pg-row .pg-cell:not(:last-child) { border-right:1px solid var(--border); }
+    .pg-lbl { font-size:0.82rem; font-weight:600; }
+    .pg-lbl small { display:block; font-size:0.65rem; color:var(--muted); font-weight:400; margin-top:1px; }
+    .pg-cell input { background:transparent; border:none; color:var(--text); font-family:inherit; font-size:0.85rem; outline:none; width:100%; padding:0; }
+    .pg-cell input:focus { border-bottom:1px solid #444; }
+    .pg-cell input::placeholder { color:var(--dim); }
+    @media(max-width:540px){
+      .pg-head, .pg-row { grid-template-columns:100px 1fr 1fr; }
+      .pg-head span, .pg-cell { padding:0.5rem 0.65rem; }
+    }
+
+    /* ── Upload area ─────────────────────────────────────────────────────── */
+    .upload-area { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.5rem; display:flex; flex-direction:column; gap:1rem; }
+    .file-row { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }
+    .file-btn { display:inline-flex; align-items:center; gap:0.45rem; padding:0.55rem 1rem; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:0.8rem; font-weight:500; cursor:pointer; transition:border-color .15s; white-space:nowrap; }
+    .file-btn:hover { border-color:#555; }
+    .file-nm { font-size:0.78rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px; }
+    .prog-wrap { display:none; flex-direction:column; gap:0.3rem; }
+    .prog-wrap.on { display:flex; }
+    .prog-bg { height:3px; background:var(--border); border-radius:99px; overflow:hidden; }
+    .prog-fill { height:100%; background:#fff; border-radius:99px; width:0%; transition:width .2s; }
+    .prog-txt { font-size:0.7rem; color:var(--muted); }
+
+    /* ── Buttons ─────────────────────────────────────────────────────────── */
+    .btn-white { background:#fff; color:#000; border:none; padding:0.6rem 1.5rem; border-radius:7px; font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; letter-spacing:0.02em; transition:opacity .15s; }
+    .btn-white:hover { opacity:0.85; }
+    .btn-white:disabled { opacity:0.3; cursor:not-allowed; }
+    .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); font-family:inherit; font-size:0.72rem; padding:0.38rem 0.85rem; border-radius:6px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+    .btn-ghost:hover { border-color:#666; color:var(--text); }
+    .btn-ghost.saved { border-color:var(--green); color:var(--green); }
+
+    /* ── Library ─────────────────────────────────────────────────────────── */
+    .library { display:grid; grid-template-columns:repeat(auto-fill, minmax(185px,1fr)); gap:10px; }
+    .lib-card { display:flex; flex-direction:column; gap:5px; }
+    .lib-thumb { position:relative; background:var(--surface); border-radius:8px; overflow:hidden; aspect-ratio:16/9; }
+    .lib-thumb.sq { aspect-ratio:1/1; }
+    .lib-thumb img, .lib-thumb video { width:100%; height:100%; object-fit:cover; display:block; }
+    .lib-badge { position:absolute; top:6px; left:6px; background:rgba(0,0,0,0.82); color:#fff; font-size:0.56rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:2px 6px; border-radius:4px; }
+    .lib-del { position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.72); border:none; color:#fff; width:24px; height:24px; border-radius:4px; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .15s, background .15s; }
+    .lib-thumb:hover .lib-del { opacity:1; }
+    .lib-del:hover { background:var(--red); }
+    .lib-ta { background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:0.78rem; padding:0.42rem 0.6rem; border-radius:6px; resize:vertical; min-height:50px; outline:none; line-height:1.5; transition:border-color .15s; width:100%; }
+    .lib-ta:focus { border-color:#3a3a3a; }
+    .lib-ta::placeholder { color:var(--dim); }
+    .lib-url { background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:0.74rem; padding:0.36rem 0.55rem; border-radius:6px; outline:none; width:100%; transition:border-color .15s; }
+    .lib-url:focus { border-color:#3a3a3a; }
+    .lib-url::placeholder { color:var(--dim); }
+    .lib-pills { display:flex; gap:0.28rem; flex-wrap:wrap; }
+    .lib-pill { padding:0.25rem 0.6rem; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:0.66rem; cursor:pointer; transition:all .12s; }
+    .lib-pill:hover { border-color:#555; color:var(--text); }
+    .lib-pill.active { border-color:#aaa; color:#fff; }
+    .lib-footer { display:flex; justify-content:flex-end; }
+    .lib-empty { color:var(--muted); font-size:0.82rem; padding:2rem; text-align:center; grid-column:1/-1; }
+
+    /* ── Services ────────────────────────────────────────────────────────── */
+    .svc-list { display:flex; flex-direction:column; gap:0.75rem; }
+    .svc-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1rem 1.1rem; display:flex; flex-direction:column; gap:0.6rem; }
+    .svc-top { display:flex; align-items:center; gap:0.75rem; }
+    .svc-num { font-size:0.65rem; font-weight:700; color:var(--muted); min-width:20px; }
+    .svc-title-in { background:transparent; border:none; color:var(--text); font-family:inherit; font-size:0.9rem; font-weight:600; outline:none; flex:1; padding:0; }
+    .svc-title-in::placeholder { color:var(--dim); }
+    .svc-title-in:focus { border-bottom:1px solid #444; }
+    .svc-desc-ta { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:0.8rem; padding:0.5rem 0.7rem; border-radius:6px; outline:none; resize:vertical; min-height:58px; line-height:1.6; width:100%; transition:border-color .15s; }
+    .svc-desc-ta:focus { border-color:#3a3a3a; }
+    .svc-foot { display:flex; justify-content:flex-end; gap:0.5rem; }
+    .btn-del { background:transparent; border:1px solid var(--border); color:var(--muted); font-family:inherit; font-size:0.72rem; padding:0.35rem 0.8rem; border-radius:6px; cursor:pointer; transition:all .15s; }
+    .btn-del:hover { border-color:var(--red); color:var(--red); }
+
+    /* ── Toast ───────────────────────────────────────────────────────────── */
+    #toast { position:fixed; bottom:5.5rem; left:50%; transform:translateX(-50%) translateY(6px); background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.6rem 1.2rem; border-radius:8px; font-size:0.82rem; font-weight:500; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:999; white-space:nowrap; }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    #toast.success { border-color:var(--green); color:var(--green); }
+    #toast.error   { border-color:var(--red);   color:var(--red); }
+
+    /* ── Save bar ────────────────────────────────────────────────────────── */
+    #saveBar { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(12px); border-top:1px solid var(--border); padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:flex-end; z-index:200; }
+    .btn-save { background:#fff; color:#000; border:none; padding:0.65rem 2.2rem; font-size:0.88rem; font-weight:700; font-family:inherit; border-radius:7px; cursor:pointer; letter-spacing:0.04em; transition:opacity .15s; min-width:120px; }
+    .btn-save:hover { opacity:0.85; }
+    .btn-save:disabled { opacity:0.4; cursor:not-allowed; }
+    .btn-save.saved { background:var(--green); color:#fff; }
+    @media(max-width:540px){ #saveBar { padding:0.75rem 1rem; } }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Admin Panel</h1>
-  <div style="display:flex;gap:1.5rem;align-items:center;">
+  <span class="h-logo">Admin Panel</span>
+  <div class="h-links">
     <a href="/" target="_blank">View Site ↗</a>
     <a href="/admin/logout">Logout</a>
   </div>
 </header>
 
-<main>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="settings">Settings</button>
+  <button class="tab-btn"        data-tab="pages">Pages</button>
+  <button class="tab-btn"        data-tab="home">Home &amp; Work</button>
+  <button class="tab-btn"        data-tab="app">App Store</button>
+  <button class="tab-btn"        data-tab="store">Store</button>
+  <button class="tab-btn"        data-tab="services">Services</button>
+</nav>
 
-  <!-- ── 1. Creator Settings ───────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Creator Settings</p>
-    <div class="field">
-      <label for="inputName">Creator Name</label>
-      <input type="text" id="inputName" placeholder="e.g. LVCHLD" />
-    </div>
-    <div class="fields-row">
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: SETTINGS
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-settings">
+
+  <div class="sec">
+    <p class="sec-label">Brand</p>
+    <div class="card">
       <div class="field">
-        <label>Accent Color</label>
-        <div class="color-row">
-          <input type="color" id="colorPicker" value="#ffffff" />
-          <input type="text"  id="colorHex"    value="#ffffff" placeholder="#ffffff" />
+        <label for="inputName">Creator / Brand Name</label>
+        <input class="fi" type="text" id="inputName" placeholder="e.g. LVCHLD" />
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Instagram URL</label>
+          <input class="fi" type="url" id="inputInsta" placeholder="https://instagram.com/username" />
         </div>
-      </div>
-      <div class="field">
-        <label>Background Color</label>
-        <div class="color-row">
-          <input type="color" id="bgColorPicker" value="#000000" />
-          <input type="text"  id="bgColorHex"    value="#000000" placeholder="#000000" />
-        </div>
-      </div>
-    </div>
-    <div class="field">
-      <label for="inputInsta">Instagram URL</label>
-      <input type="url" id="inputInsta" placeholder="https://instagram.com/username" />
-    </div>
-    <div class="field">
-      <label for="inputEmail">Email</label>
-      <input type="email" id="inputEmail" placeholder="your@email.com" />
-    </div>
-  </section>
-
-  <!-- ── 2. Page Names (Nav) ───────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Page Names — Navigation Links</p>
-    <div class="fields-row">
-      <div class="field"><label>Home nav link</label><input type="text" id="pn-home" placeholder="Home" /></div>
-      <div class="field"><label>Work nav link</label><input type="text" id="pn-work" placeholder="Work" /></div>
-    </div>
-    <div class="fields-row">
-      <div class="field"><label>Services nav link</label><input type="text" id="pn-services" placeholder="Services" /></div>
-      <div class="field"><label>App page nav link</label><input type="text" id="pn-app" placeholder="App Store" /></div>
-    </div>
-    <div class="fields-row">
-      <div class="field"><label>Store page nav link</label><input type="text" id="pn-store" placeholder="Store" /></div>
-      <div class="field"><label>Let's Talk nav link</label><input type="text" id="pn-letstalk" placeholder="Let's Talk" /></div>
-    </div>
-  </section>
-
-  <!-- ── 2b. Page Titles (Big Display Title) ───────────────────────────────── -->
-  <section>
-    <p class="section-title">Page Titles — Big Display Text</p>
-    <p style="font-size:0.78rem;color:var(--muted);margin-top:-0.5rem;">The large title shown at the top of each page. Leave blank to show the Creator Name.</p>
-    <div class="fields-row">
-      <div class="field"><label>Home page title</label><input type="text" id="pt-home" placeholder="Leave blank = Creator Name" /></div>
-      <div class="field"><label>Work page title</label><input type="text" id="pt-work" placeholder="e.g. Work" /></div>
-    </div>
-    <div class="fields-row">
-      <div class="field"><label>Services page title</label><input type="text" id="pt-services" placeholder="e.g. Services" /></div>
-      <div class="field"><label>App page title</label><input type="text" id="pt-app" placeholder="e.g. App Store" /></div>
-    </div>
-    <div class="fields-row">
-      <div class="field"><label>Store page title</label><input type="text" id="pt-store" placeholder="e.g. Store" /></div>
-      <div class="field"><label>Let's Talk page title</label><input type="text" id="pt-letstalk" placeholder="e.g. Let's Talk" /></div>
-    </div>
-  </section>
-
-  <!-- ── 3. Login Credentials ──────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Login Credentials</p>
-    <div class="field">
-      <label for="inputAdminUser">Username</label>
-      <input type="text" id="inputAdminUser" placeholder="LVCHLDSTUDIOS" autocomplete="off" />
-    </div>
-    <div class="field">
-      <label for="inputAdminPass">New Password</label>
-      <input type="password" id="inputAdminPass" placeholder="Leave blank to keep current" autocomplete="new-password" />
-    </div>
-  </section>
-
-  <!-- ── 4. Mute Button ────────────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Mute / Unmute Button</p>
-    <div class="field">
-      <label>Button Size</label>
-      <div class="size-pills">
-        <button class="size-pill" data-size="small"  onclick="selectSize(this)">Small</button>
-        <button class="size-pill active" data-size="medium" onclick="selectSize(this)">Medium</button>
-        <button class="size-pill" data-size="large"  onclick="selectSize(this)">Large</button>
-      </div>
-    </div>
-    <div class="fields-row">
-      <div class="field">
-        <label>Button Background</label>
-        <div class="color-row">
-          <input type="color" id="btnBgPicker" value="#000000" />
-          <input type="text"  id="btnBgHex"    value="transparent" placeholder="transparent or #000000" />
-        </div>
-      </div>
-      <div class="field">
-        <label>Border Color</label>
-        <div class="color-row">
-          <input type="color" id="btnBorderPicker" value="#ffffff" />
-          <input type="text"  id="btnBorderHex"    value="#ffffff" placeholder="#ffffff" />
+        <div class="field">
+          <label>Email</label>
+          <input class="fi" type="email" id="inputEmail" placeholder="your@email.com" />
         </div>
       </div>
     </div>
-    <div class="field">
-      <label>Text Color</label>
-      <div class="color-row">
-        <input type="color" id="btnTextPicker" value="#ffffff" />
-        <input type="text"  id="btnTextHex"    value="#ffffff" placeholder="#ffffff" />
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Colors</p>
+    <div class="card">
+      <div class="row2">
+        <div class="field">
+          <label>Accent Color</label>
+          <div class="color-row">
+            <input type="color" id="colorPicker" value="#ffffff" />
+            <input class="fi" type="text" id="colorHex" value="#ffffff" placeholder="#ffffff" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Background Color</label>
+          <div class="color-row">
+            <input type="color" id="bgColorPicker" value="#000000" />
+            <input class="fi" type="text" id="bgColorHex" value="#000000" placeholder="#000000" />
+          </div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ── 5. Services ───────────────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Services</p>
-    <div id="servicesList" style="display:flex;flex-direction:column;gap:1rem;"></div>
-    <div class="upload-box" style="margin-top:0.5rem;">
-      <p class="upload-hint">Add a new service</p>
+  <div class="sec">
+    <p class="sec-label">Mute / Unmute Button</p>
+    <div class="card">
+      <div class="field">
+        <label>Button Size</label>
+        <div class="pills">
+          <button class="pill" data-size="small"  onclick="selectSize(this)">Small</button>
+          <button class="pill active" data-size="medium" onclick="selectSize(this)">Medium</button>
+          <button class="pill" data-size="large"  onclick="selectSize(this)">Large</button>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Background</label>
+          <div class="color-row">
+            <input type="color" id="btnBgPicker" value="#000000" />
+            <input class="fi" type="text" id="btnBgHex" value="transparent" placeholder="transparent or #hex" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Border Color</label>
+          <div class="color-row">
+            <input type="color" id="btnBorderPicker" value="#ffffff" />
+            <input class="fi" type="text" id="btnBorderHex" value="#ffffff" placeholder="#ffffff" />
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Text Color</label>
+        <div class="color-row">
+          <input type="color" id="btnTextPicker" value="#ffffff" />
+          <input class="fi" type="text" id="btnTextHex" value="#ffffff" placeholder="#ffffff" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Login Credentials</p>
+    <div class="card">
+      <div class="row2">
+        <div class="field">
+          <label>Username</label>
+          <input class="fi" type="text" id="inputAdminUser" placeholder="LVCHLDSTUDIOS" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>New Password</label>
+          <input class="fi" type="password" id="inputAdminPass" placeholder="Leave blank to keep current" autocomplete="new-password" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: PAGES
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-pages">
+
+  <div class="sec">
+    <p class="sec-label">Page Names &amp; Titles</p>
+    <p style="font-size:0.78rem;color:var(--muted);line-height:1.6;"><strong style="color:var(--text);">Nav Link</strong> — the text shown in the navigation menu. &nbsp;|&nbsp; <strong style="color:var(--text);">Display Title</strong> — the big heading shown on that page (leave blank to show Creator Name).</p>
+
+    <div class="pg-table">
+      <div class="pg-head">
+        <span>Page</span>
+        <span>Nav Link</span>
+        <span>Display Title</span>
+      </div>
+      <!-- Home -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">Home<small>/</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-home" placeholder="Home" /></div>
+        <div class="pg-cell"><input type="text" id="pt-home" placeholder="← shows Creator Name" /></div>
+      </div>
+      <!-- Work -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">Work<small>/work</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-work" placeholder="Work" /></div>
+        <div class="pg-cell"><input type="text" id="pt-work" placeholder="e.g. Work" /></div>
+      </div>
+      <!-- Services -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">Services<small>/services</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-services" placeholder="Services" /></div>
+        <div class="pg-cell"><input type="text" id="pt-services" placeholder="e.g. Services" /></div>
+      </div>
+      <!-- App -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">App Store<small>/app</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-app" placeholder="App Store" /></div>
+        <div class="pg-cell"><input type="text" id="pt-app" placeholder="e.g. App Store" /></div>
+      </div>
+      <!-- Store -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">Store<small>/store</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-store" placeholder="Store" /></div>
+        <div class="pg-cell"><input type="text" id="pt-store" placeholder="e.g. Store" /></div>
+      </div>
+      <!-- Let's Talk -->
+      <div class="pg-row">
+        <div class="pg-cell"><span class="pg-lbl">Let's Talk<small>/letstalk</small></span></div>
+        <div class="pg-cell"><input type="text" id="pn-letstalk" placeholder="Let's Talk" /></div>
+        <div class="pg-cell"><input type="text" id="pt-letstalk" placeholder="e.g. Let's Talk" /></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: HOME & WORK
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-home">
+
+  <div class="sec">
+    <p class="sec-label">Upload Media</p>
+    <p style="font-size:0.78rem;color:var(--muted);">Photos appear on the <strong style="color:var(--text);">Home</strong> masonry wall. Videos appear on both <strong style="color:var(--text);">Home</strong> and <strong style="color:var(--text);">Work</strong>.</p>
+    <div class="upload-area">
+      <div class="file-row">
+        <label class="file-btn" for="mainFileIn">📁 Choose File</label>
+        <input type="file" id="mainFileIn" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'main')" />
+        <span class="file-nm" id="mainFileNm">No file chosen</span>
+      </div>
+      <div class="field">
+        <label>Description <span style="color:var(--muted);font-weight:400;">(shown on Work page)</span></label>
+        <textarea class="fi" id="mainDescIn" placeholder="Describe this project…"></textarea>
+      </div>
+      <div class="field">
+        <label>Layout</label>
+        <div class="pills" id="mainPosPills">
+          <button class="pill active" data-pos="bottom" onclick="selectPos(this,'main')">Text Below</button>
+          <button class="pill"        data-pos="top"    onclick="selectPos(this,'main')">Text Above</button>
+          <button class="pill"        data-pos="side"   onclick="selectPos(this,'main')">Side by Side</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Link URL <span style="color:var(--muted);font-weight:400;">(optional — clicking opens this)</span></label>
+        <input class="fi" type="url" id="mainLinkUrl" placeholder="https://example.com" />
+      </div>
+      <div class="prog-wrap" id="mainProg">
+        <div class="prog-bg"><div class="prog-fill" id="mainProgBar"></div></div>
+        <span class="prog-txt" id="mainProgTxt">Uploading…</span>
+      </div>
+      <button class="btn-white" id="mainUploadBtn" onclick="uploadFile('main')" disabled>Upload</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Media Library</p>
+    <div class="library" id="mainGrid"></div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: APP STORE
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-app">
+
+  <div class="sec">
+    <p class="sec-label">Upload Media</p>
+    <p style="font-size:0.78rem;color:var(--muted);">Videos and images shown on the <strong style="color:var(--text);">App Store</strong> page with descriptions and optional links.</p>
+    <div class="upload-area">
+      <div class="file-row">
+        <label class="file-btn" for="appFileIn">📁 Choose File</label>
+        <input type="file" id="appFileIn" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'app')" />
+        <span class="file-nm" id="appFileNm">No file chosen</span>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea class="fi" id="appDescIn" placeholder="Describe this content…"></textarea>
+      </div>
+      <div class="field">
+        <label>Layout</label>
+        <div class="pills" id="appPosPills">
+          <button class="pill active" data-pos="bottom" onclick="selectPos(this,'app')">Text Below</button>
+          <button class="pill"        data-pos="top"    onclick="selectPos(this,'app')">Text Above</button>
+          <button class="pill"        data-pos="side"   onclick="selectPos(this,'app')">Side by Side</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Link URL <span style="color:var(--muted);font-weight:400;">(optional — e.g. App Store link)</span></label>
+        <input class="fi" type="url" id="appLinkUrl" placeholder="https://apps.apple.com/…" />
+      </div>
+      <div class="prog-wrap" id="appProg">
+        <div class="prog-bg"><div class="prog-fill" id="appProgBar"></div></div>
+        <span class="prog-txt" id="appProgTxt">Uploading…</span>
+      </div>
+      <button class="btn-white" id="appUploadBtn" onclick="uploadFile('app')" disabled>Upload</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Media Library</p>
+    <div class="library" id="appGrid"></div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: STORE
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-store">
+
+  <div class="sec">
+    <p class="sec-label">Upload Media</p>
+    <p style="font-size:0.78rem;color:var(--muted);">Videos and images shown on the <strong style="color:var(--text);">Store</strong> page with descriptions and optional links.</p>
+    <div class="upload-area">
+      <div class="file-row">
+        <label class="file-btn" for="storeFileIn">📁 Choose File</label>
+        <input type="file" id="storeFileIn" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'store')" />
+        <span class="file-nm" id="storeFileNm">No file chosen</span>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea class="fi" id="storeDescIn" placeholder="Describe this drop…"></textarea>
+      </div>
+      <div class="field">
+        <label>Layout</label>
+        <div class="pills" id="storePosPills">
+          <button class="pill active" data-pos="bottom" onclick="selectPos(this,'store')">Text Below</button>
+          <button class="pill"        data-pos="top"    onclick="selectPos(this,'store')">Text Above</button>
+          <button class="pill"        data-pos="side"   onclick="selectPos(this,'store')">Side by Side</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Link URL <span style="color:var(--muted);font-weight:400;">(optional — e.g. product page)</span></label>
+        <input class="fi" type="url" id="storeLinkUrl" placeholder="https://yourstore.com/…" />
+      </div>
+      <div class="prog-wrap" id="storeProg">
+        <div class="prog-bg"><div class="prog-fill" id="storeProgBar"></div></div>
+        <span class="prog-txt" id="storeProgTxt">Uploading…</span>
+      </div>
+      <button class="btn-white" id="storeUploadBtn" onclick="uploadFile('store')" disabled>Upload</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Media Library</p>
+    <div class="library" id="storeGrid"></div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     TAB: SERVICES
+════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-services">
+
+  <div class="sec">
+    <p class="sec-label">Your Services</p>
+    <div class="svc-list" id="svcList"></div>
+  </div>
+
+  <div class="sec">
+    <p class="sec-label">Add New Service</p>
+    <div class="card">
       <div class="field">
         <label>Service Title</label>
-        <input type="text" id="newSvcTitle" placeholder="e.g. Professional AI Videos & Assets" />
+        <input class="fi" type="text" id="newSvcTitle" placeholder="e.g. Professional AI Videos &amp; Assets" />
       </div>
       <div class="field">
         <label>Description</label>
-        <textarea id="newSvcDesc" class="desc-input" style="display:block;" placeholder="2–3 lines describing this service…"></textarea>
+        <textarea class="fi" id="newSvcDesc" placeholder="2–3 lines describing this service…"></textarea>
       </div>
-      <button class="upload-btn" onclick="addService()">Add Service</button>
+      <button class="btn-white" style="align-self:flex-start;" onclick="addService()">Add Service</button>
     </div>
-  </section>
+  </div>
 
-  <!-- ── 6. Home / Work Media ──────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title">Home & Work — Upload Media</p>
-    <div class="upload-box" id="mainUploadBox">
-      <p class="upload-hint">Photos: <strong>JPG, PNG, WEBP, GIF</strong> &nbsp;·&nbsp; Videos: <strong>MP4, MOV, WEBM, AVI</strong> &nbsp;·&nbsp; Max 2 GB</p>
-      <div class="file-pick-row">
-        <label class="file-label" for="mainFileInput">&#128190; Choose File</label>
-        <input type="file" id="mainFileInput" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'main')" />
-        <span class="file-name" id="mainFileName">No file chosen</span>
-      </div>
-      <div class="desc-wrap" id="mainDescWrap">
-        <label>Description (shown on Work page)</label>
-        <textarea class="desc-input" id="mainDescInput" placeholder="Describe this project…"></textarea>
-        <label style="margin-top:0.5rem;">Layout</label>
-        <div class="size-pills" id="mainPosPills">
-          <button class="size-pill active" data-pos="bottom" onclick="selectPos(this,'main')">Text below</button>
-          <button class="size-pill"        data-pos="top"    onclick="selectPos(this,'main')">Text above</button>
-          <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'main')">Side by side</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Link URL (optional — clicking opens this link)</label>
-        <input type="url" id="mainLinkUrl" placeholder="https://example.com" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
-      </div>
-      <div class="progress-wrap" id="mainProgressWrap">
-        <div class="progress-bar-bg"><div class="progress-bar-fill" id="mainProgressBar"></div></div>
-        <span class="progress-text" id="mainProgressText">Uploading…</span>
-      </div>
-      <button class="upload-btn" id="mainUploadBtn" onclick="uploadFile('main','/api/upload','mainFileInput','mainDescInput','mainPosPills','mainProgressWrap','mainProgressBar','mainProgressText','mainFileName','mainDescWrap','mainLibraryGrid')" disabled>Upload</button>
-    </div>
-    <div id="mainLibraryGrid" class="library-grid"></div>
-  </section>
+</div>
 
-  <!-- ── 7. App Page Media ─────────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title" id="appSectionTitle">App Store Page — Upload Media</p>
-    <div class="upload-box">
-      <p class="upload-hint">Upload videos or images for your App page. Add a description and choose the layout.</p>
-      <div class="file-pick-row">
-        <label class="file-label" for="appFileInput">&#128190; Choose File</label>
-        <input type="file" id="appFileInput" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'app')" />
-        <span class="file-name" id="appFileName">No file chosen</span>
-      </div>
-      <div class="desc-wrap" id="appDescWrap">
-        <label>Description</label>
-        <textarea class="desc-input" id="appDescInput" placeholder="Describe this content…"></textarea>
-        <label style="margin-top:0.5rem;">Layout</label>
-        <div class="size-pills" id="appPosPills">
-          <button class="size-pill active" data-pos="bottom" onclick="selectPos(this,'app')">Text below</button>
-          <button class="size-pill"        data-pos="top"    onclick="selectPos(this,'app')">Text above</button>
-          <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'app')">Side by side</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Link URL (optional — clicking opens this link)</label>
-        <input type="url" id="appLinkUrl" placeholder="https://apps.apple.com/..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
-      </div>
-      <div class="progress-wrap" id="appProgressWrap">
-        <div class="progress-bar-bg"><div class="progress-bar-fill" id="appProgressBar"></div></div>
-        <span class="progress-text" id="appProgressText">Uploading…</span>
-      </div>
-      <button class="upload-btn" id="appUploadBtn" onclick="uploadFile('app','/api/app-media/upload','appFileInput','appDescInput','appPosPills','appProgressWrap','appProgressBar','appProgressText','appFileName','appDescWrap','appLibraryGrid')" disabled>Upload</button>
-    </div>
-    <div id="appLibraryGrid" class="library-grid"></div>
-  </section>
 
-  <!-- ── 8. Store Page Media ───────────────────────────────────────────────── -->
-  <section>
-    <p class="section-title" id="storeSectionTitle">Store Page — Upload Media</p>
-    <div class="upload-box">
-      <p class="upload-hint">Upload videos or images of recent drops for your Store page.</p>
-      <div class="file-pick-row">
-        <label class="file-label" for="storeFileInput">&#128190; Choose File</label>
-        <input type="file" id="storeFileInput" style="display:none;" accept="image/*,video/*" onchange="onFilePicked(this,'store')" />
-        <span class="file-name" id="storeFileName">No file chosen</span>
-      </div>
-      <div class="desc-wrap" id="storeDescWrap">
-        <label>Description</label>
-        <textarea class="desc-input" id="storeDescInput" placeholder="Describe this drop…"></textarea>
-        <label style="margin-top:0.5rem;">Layout</label>
-        <div class="size-pills" id="storePosPills">
-          <button class="size-pill active" data-pos="bottom" onclick="selectPos(this,'store')">Text below</button>
-          <button class="size-pill"        data-pos="top"    onclick="selectPos(this,'store')">Text above</button>
-          <button class="size-pill"        data-pos="side"   onclick="selectPos(this,'store')">Side by side</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Link URL (optional — clicking opens this link)</label>
-        <input type="url" id="storeLinkUrl" placeholder="https://yourstore.com/product" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;padding:0.65rem 0.8rem;border-radius:6px;outline:none;width:100%;" />
-      </div>
-      <div class="progress-wrap" id="storeProgressWrap">
-        <div class="progress-bar-bg"><div class="progress-bar-fill" id="storeProgressBar"></div></div>
-        <span class="progress-text" id="storeProgressText">Uploading…</span>
-      </div>
-      <button class="upload-btn" id="storeUploadBtn" onclick="uploadFile('store','/api/store-media/upload','storeFileInput','storeDescInput','storePosPills','storeProgressWrap','storeProgressBar','storeProgressText','storeFileName','storeDescWrap','storeLibraryGrid')" disabled>Upload</button>
-    </div>
-    <div id="storeLibraryGrid" class="library-grid"></div>
-  </section>
-
-</main>
-
-<div class="save-bar">
-  <p>Change anything above, then hit Save.</p>
+<!-- Save bar (Settings + Pages tabs only) -->
+<div id="saveBar">
   <button class="btn-save" id="saveBtn" onclick="saveSettings()">SAVE</button>
 </div>
+
 <div id="toast"></div>
 
 <script>
-  // ── Toast ──────────────────────────────────────────────────────────────────
-  let toastTimer;
-  function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = 'show ' + type;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
-  }
+// ── Tab system ─────────────────────────────────────────────────────────────
+const SAVE_TABS = new Set(['settings', 'pages']);
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    document.getElementById('saveBar').style.display = SAVE_TABS.has(btn.dataset.tab) ? 'flex' : 'none';
+  });
+});
 
-  // ── Size / position selectors ──────────────────────────────────────────────
-  function selectSize(el) {
-    document.querySelectorAll('[data-size]').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-  }
-  function getSelectedSize() {
-    const a = document.querySelector('[data-size].active');
-    return a ? a.dataset.size : 'medium';
-  }
-  function selectPos(el, prefix) {
-    const pills = document.getElementById(prefix + 'PosPills');
-    pills.querySelectorAll('[data-pos]').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-  }
-  function getSelectedPos(prefix) {
-    const pills = document.getElementById(prefix + 'PosPills');
-    const a = pills ? pills.querySelector('[data-pos].active') : null;
-    return a ? a.dataset.pos : 'bottom';
-  }
+// ── Toast ──────────────────────────────────────────────────────────────────
+let _tt;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(_tt); _tt = setTimeout(() => { t.className = ''; }, 3000);
+}
 
-  // ── Color sync ─────────────────────────────────────────────────────────────
-  function syncColors(pickerId, hexId) {
-    const picker = document.getElementById(pickerId);
-    const hex    = document.getElementById(hexId);
-    picker.addEventListener('input', () => { hex.value = picker.value; });
-    hex.addEventListener('input',   () => { if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex.value)) picker.value = hex.value; });
-  }
-  syncColors('colorPicker',     'colorHex');
-  syncColors('bgColorPicker',   'bgColorHex');
-  syncColors('btnBgPicker',     'btnBgHex');
-  syncColors('btnBorderPicker', 'btnBorderHex');
-  syncColors('btnTextPicker',   'btnTextHex');
+// ── Size / position helpers ────────────────────────────────────────────────
+function selectSize(el) {
+  document.querySelectorAll('[data-size]').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+function getSelectedSize() {
+  const a = document.querySelector('[data-size].active');
+  return a ? a.dataset.size : 'medium';
+}
+function selectPos(el, prefix) {
+  const pills = document.getElementById(prefix + 'PosPills');
+  pills.querySelectorAll('[data-pos]').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+function getSelectedPos(prefix) {
+  const pills = document.getElementById(prefix + 'PosPills');
+  const a = pills ? pills.querySelector('[data-pos].active') : null;
+  return a ? a.dataset.pos : 'bottom';
+}
 
-  // ── Load config ────────────────────────────────────────────────────────────
-  async function loadConfig() {
-    const cfg = await fetch('/api/config').then(r => r.json());
+// ── Color sync ─────────────────────────────────────────────────────────────
+function syncColors(pickerId, hexId) {
+  const picker = document.getElementById(pickerId);
+  const hex    = document.getElementById(hexId);
+  picker.addEventListener('input', () => { hex.value = picker.value; });
+  hex.addEventListener('input',   () => { if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex.value)) picker.value = hex.value; });
+}
+syncColors('colorPicker',     'colorHex');
+syncColors('bgColorPicker',   'bgColorHex');
+syncColors('btnBgPicker',     'btnBgHex');
+syncColors('btnBorderPicker', 'btnBorderHex');
+syncColors('btnTextPicker',   'btnTextHex');
 
-    document.getElementById('inputName').value      = cfg.creatorName   || '';
-    document.getElementById('inputInsta').value     = cfg.instagram     || '';
-    document.getElementById('inputEmail').value     = cfg.email         || '';
-    document.getElementById('inputAdminUser').value = cfg.adminUsername || '';
+// ── Load config ────────────────────────────────────────────────────────────
+async function loadConfig() {
+  const cfg = await fetch('/api/config').then(r => r.json());
 
-    const accent = cfg.accentColor     || '#ffffff';
-    const bg     = cfg.backgroundColor || '#000000';
-    document.getElementById('colorPicker').value   = accent;
-    document.getElementById('colorHex').value      = accent;
-    document.getElementById('bgColorPicker').value = bg;
-    document.getElementById('bgColorHex').value    = bg;
+  document.getElementById('inputName').value      = cfg.creatorName   || '';
+  document.getElementById('inputInsta').value     = cfg.instagram     || '';
+  document.getElementById('inputEmail').value     = cfg.email         || '';
+  document.getElementById('inputAdminUser').value = cfg.adminUsername || '';
 
-    const mb = cfg.muteBtn || {};
-    const btnBg     = mb.bgColor     || 'transparent';
-    const btnBorder = mb.borderColor || '#ffffff';
-    const btnText   = mb.textColor   || '#ffffff';
-    document.getElementById('btnBgHex').value     = btnBg;
-    document.getElementById('btnBorderHex').value = btnBorder;
-    document.getElementById('btnTextHex').value   = btnText;
-    if (/^#/.test(btnBg))     document.getElementById('btnBgPicker').value     = btnBg;
-    if (/^#/.test(btnBorder)) document.getElementById('btnBorderPicker').value = btnBorder;
-    if (/^#/.test(btnText))   document.getElementById('btnTextPicker').value   = btnText;
+  const accent = cfg.accentColor     || '#ffffff';
+  const bg     = cfg.backgroundColor || '#000000';
+  document.getElementById('colorPicker').value   = accent;
+  document.getElementById('colorHex').value      = accent;
+  document.getElementById('bgColorPicker').value = bg;
+  document.getElementById('bgColorHex').value    = bg;
 
-    const size = mb.size || 'medium';
-    document.querySelectorAll('[data-size]').forEach(p => p.classList.toggle('active', p.dataset.size === size));
+  const mb = cfg.muteBtn || {};
+  const btnBg     = mb.bgColor     || 'transparent';
+  const btnBorder = mb.borderColor || '#ffffff';
+  const btnText   = mb.textColor   || '#ffffff';
+  document.getElementById('btnBgHex').value     = btnBg;
+  document.getElementById('btnBorderHex').value = btnBorder;
+  document.getElementById('btnTextHex').value   = btnText;
+  if (/^#/.test(btnBg))     document.getElementById('btnBgPicker').value     = btnBg;
+  if (/^#/.test(btnBorder)) document.getElementById('btnBorderPicker').value = btnBorder;
+  if (/^#/.test(btnText))   document.getElementById('btnTextPicker').value   = btnText;
+  const size = mb.size || 'medium';
+  document.querySelectorAll('[data-size]').forEach(p => p.classList.toggle('active', p.dataset.size === size));
 
-    // Page names
-    const pn = cfg.pageNames || {};
-    document.getElementById('pn-home').value     = pn.home     || 'Home';
-    document.getElementById('pn-work').value     = pn.work     || 'Work';
-    document.getElementById('pn-services').value = pn.services || 'Services';
-    document.getElementById('pn-app').value      = pn.app      || 'App Store';
-    document.getElementById('pn-store').value    = pn.store    || 'Store';
-    document.getElementById('pn-letstalk').value = pn.letstalk || "Let's Talk";
+  // Page names
+  const pn = cfg.pageNames || {};
+  document.getElementById('pn-home').value     = pn.home     || '';
+  document.getElementById('pn-work').value     = pn.work     || '';
+  document.getElementById('pn-services').value = pn.services || '';
+  document.getElementById('pn-app').value      = pn.app      || '';
+  document.getElementById('pn-store').value    = pn.store    || '';
+  document.getElementById('pn-letstalk').value = pn.letstalk || '';
 
-    // Page titles
-    const pt = cfg.pageTitles || {};
-    document.getElementById('pt-home').value     = pt.home     || '';
-    document.getElementById('pt-work').value     = pt.work     || 'Work';
-    document.getElementById('pt-services').value = pt.services || 'Services';
-    document.getElementById('pt-app').value      = pt.app      || 'App Store';
-    document.getElementById('pt-store').value    = pt.store    || 'Store';
-    document.getElementById('pt-letstalk').value = pt.letstalk || "Let's Talk";
+  // Page titles
+  const pt = cfg.pageTitles || {};
+  document.getElementById('pt-home').value     = pt.home     || '';
+  document.getElementById('pt-work').value     = pt.work     || '';
+  document.getElementById('pt-services').value = pt.services || '';
+  document.getElementById('pt-app').value      = pt.app      || '';
+  document.getElementById('pt-store').value    = pt.store    || '';
+  document.getElementById('pt-letstalk').value = pt.letstalk || '';
+}
 
-    // Update section titles with current page names
-    const appTitle   = document.getElementById('appSectionTitle');
-    const storeTitle = document.getElementById('storeSectionTitle');
-    if (appTitle)   appTitle.textContent   = (pn.app   || 'App Store') + ' Page — Upload Media';
-    if (storeTitle) storeTitle.textContent = (pn.store  || 'Store')    + ' Page — Upload Media';
-  }
+// ── Save settings ──────────────────────────────────────────────────────────
+async function saveSettings() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
 
-  // ── Save settings ──────────────────────────────────────────────────────────
-  async function saveSettings() {
-    const btn = document.getElementById('saveBtn');
-    btn.disabled = true; btn.textContent = 'Saving…';
-
-    const body = {
-      creatorName:     document.getElementById('inputName').value.trim(),
-      accentColor:     document.getElementById('colorHex').value.trim()   || '#ffffff',
-      backgroundColor: document.getElementById('bgColorHex').value.trim() || '#000000',
-      instagram:       document.getElementById('inputInsta').value.trim(),
-      email:           document.getElementById('inputEmail').value.trim(),
-      adminUsername:   document.getElementById('inputAdminUser').value.trim() || undefined,
-      adminPassword:   document.getElementById('inputAdminPass').value.trim() || undefined,
-      pageNames: {
-        home:     document.getElementById('pn-home').value.trim()     || 'Home',
-        work:     document.getElementById('pn-work').value.trim()     || 'Work',
-        services: document.getElementById('pn-services').value.trim() || 'Services',
-        app:      document.getElementById('pn-app').value.trim()      || 'App Store',
-        store:    document.getElementById('pn-store').value.trim()    || 'Store',
-        letstalk: document.getElementById('pn-letstalk').value.trim() || "Let's Talk"
-      },
-      pageTitles: {
-        home:     document.getElementById('pt-home').value.trim(),
-        work:     document.getElementById('pt-work').value.trim()     || 'Work',
-        services: document.getElementById('pt-services').value.trim() || 'Services',
-        app:      document.getElementById('pt-app').value.trim()      || 'App Store',
-        store:    document.getElementById('pt-store').value.trim()    || 'Store',
-        letstalk: document.getElementById('pt-letstalk').value.trim() || "Let's Talk"
-      },
-      muteBtn: {
-        size:        getSelectedSize(),
-        bgColor:     document.getElementById('btnBgHex').value.trim()     || 'transparent',
-        borderColor: document.getElementById('btnBorderHex').value.trim() || '#ffffff',
-        textColor:   document.getElementById('btnTextHex').value.trim()   || '#ffffff'
-      }
-    };
-
-    try {
-      const res = await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error();
-      btn.textContent = 'SAVED ✓'; btn.classList.add('saved');
-      setTimeout(() => { btn.textContent = 'SAVE'; btn.classList.remove('saved'); }, 2500);
-    } catch {
-      showToast('Could not save. Try again.', 'error');
-      btn.textContent = 'SAVE';
+  const body = {
+    creatorName:     document.getElementById('inputName').value.trim(),
+    accentColor:     document.getElementById('colorHex').value.trim()   || '#ffffff',
+    backgroundColor: document.getElementById('bgColorHex').value.trim() || '#000000',
+    instagram:       document.getElementById('inputInsta').value.trim(),
+    email:           document.getElementById('inputEmail').value.trim(),
+    adminUsername:   document.getElementById('inputAdminUser').value.trim() || undefined,
+    adminPassword:   document.getElementById('inputAdminPass').value.trim() || undefined,
+    pageNames: {
+      home:     document.getElementById('pn-home').value.trim()     || 'Home',
+      work:     document.getElementById('pn-work').value.trim()     || 'Work',
+      services: document.getElementById('pn-services').value.trim() || 'Services',
+      app:      document.getElementById('pn-app').value.trim()      || 'App Store',
+      store:    document.getElementById('pn-store').value.trim()    || 'Store',
+      letstalk: document.getElementById('pn-letstalk').value.trim() || "Let's Talk"
+    },
+    pageTitles: {
+      home:     document.getElementById('pt-home').value.trim(),
+      work:     document.getElementById('pt-work').value.trim()     || 'Work',
+      services: document.getElementById('pt-services').value.trim() || 'Services',
+      app:      document.getElementById('pt-app').value.trim()      || 'App Store',
+      store:    document.getElementById('pt-store').value.trim()    || 'Store',
+      letstalk: document.getElementById('pt-letstalk').value.trim() || "Let's Talk"
+    },
+    muteBtn: {
+      size:        getSelectedSize(),
+      bgColor:     document.getElementById('btnBgHex').value.trim()     || 'transparent',
+      borderColor: document.getElementById('btnBorderHex').value.trim() || '#ffffff',
+      textColor:   document.getElementById('btnTextHex').value.trim()   || '#ffffff'
     }
-    btn.disabled = false;
+  };
+
+  try {
+    const res = await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    if (!res.ok) throw new Error();
+    btn.textContent = 'SAVED ✓'; btn.classList.add('saved');
+    showToast('Settings saved!', 'success');
+    setTimeout(() => { btn.textContent = 'SAVE'; btn.classList.remove('saved'); }, 2500);
+  } catch {
+    showToast('Could not save. Try again.', 'error');
+    btn.textContent = 'SAVE';
   }
+  btn.disabled = false;
+}
 
-  // ── File picker (shared) ───────────────────────────────────────────────────
-  const detectedRatios = {};
+// ── API endpoint helpers ───────────────────────────────────────────────────
+function getUploadEndpoint(prefix) {
+  if (prefix === 'app')   return '/api/app-media/upload';
+  if (prefix === 'store') return '/api/store-media/upload';
+  return '/api/upload';
+}
+function getApiEndpoint(prefix) {
+  if (prefix === 'app')   return '/api/app-media';
+  if (prefix === 'store') return '/api/store-media';
+  return '/api/media';
+}
+function getPatchEndpoint(prefix) {
+  if (prefix === 'app')   return '/api/app-media/';
+  if (prefix === 'store') return '/api/store-media/';
+  return '/api/media/';
+}
+function getGridId(prefix) {
+  if (prefix === 'app')   return 'appGrid';
+  if (prefix === 'store') return 'storeGrid';
+  return 'mainGrid';
+}
 
-  function onFilePicked(input, prefix) {
-    const file = input.files[0];
-    if (!file) return;
-    document.getElementById(prefix + 'FileName').textContent = file.name;
-    document.getElementById(prefix + 'UploadBtn').disabled   = false;
-    detectedRatios[prefix] = null;
+// ── File picked ────────────────────────────────────────────────────────────
+const detectedRatios = {};
+function onFilePicked(input, prefix) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById(prefix + 'FileNm').textContent  = file.name;
+  document.getElementById(prefix + 'UploadBtn').disabled  = false;
+  detectedRatios[prefix] = null;
 
-    const isVideo  = file.type.startsWith('video/');
-    const descWrap = document.getElementById(prefix + 'DescWrap');
-    descWrap.classList.toggle('visible', isVideo);
-    if (!isVideo) { document.getElementById(prefix + 'DescInput').value = ''; return; }
-
+  // Detect aspect ratio for videos
+  if (file.type.startsWith('video/')) {
     const url = URL.createObjectURL(file);
     const probe = document.createElement('video');
     probe.preload = 'metadata'; probe.src = url;
@@ -537,241 +718,227 @@
       URL.revokeObjectURL(url);
     });
   }
+}
 
-  // ── Upload (shared) ────────────────────────────────────────────────────────
-  function uploadFile(prefix, endpoint, fileInputId, descInputId, posPillsId, progWrapId, progBarId, progTextId, fileNameId, descWrapId, gridId) {
-    const input = document.getElementById(fileInputId);
-    const file  = input.files[0];
-    if (!file) return;
+// ── Upload ─────────────────────────────────────────────────────────────────
+function uploadFile(prefix) {
+  const input = document.getElementById(prefix + 'FileIn');
+  const file  = input.files[0];
+  if (!file) return;
 
-    const btn      = document.getElementById(prefix + 'UploadBtn');
-    const progWrap = document.getElementById(progWrapId);
-    const progBar  = document.getElementById(progBarId);
-    const progText = document.getElementById(progTextId);
+  const uploadBtn = document.getElementById(prefix + 'UploadBtn');
+  const progWrap  = document.getElementById(prefix + 'Prog');
+  const progBar   = document.getElementById(prefix + 'ProgBar');
+  const progTxt   = document.getElementById(prefix + 'ProgTxt');
 
-    btn.disabled = true;
-    progWrap.classList.add('visible');
-    progBar.style.width = '0%';
-    progText.textContent = 'Uploading…';
+  uploadBtn.disabled = true;
+  progWrap.classList.add('on');
+  progBar.style.width = '0%';
+  progTxt.textContent = 'Uploading…';
 
-    const linkUrlEl = document.getElementById(prefix + 'LinkUrl');
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('description', document.getElementById(descInputId).value.trim());
-    formData.append('textPosition', getSelectedPos(prefix));
-    formData.append('linkUrl', linkUrlEl ? linkUrlEl.value.trim() : '');
-    if (detectedRatios[prefix] != null) formData.append('aspectRatio', detectedRatios[prefix].toFixed(4));
+  const formData = new FormData();
+  formData.append('file',         file);
+  formData.append('description',  document.getElementById(prefix + 'DescIn').value.trim());
+  formData.append('textPosition', getSelectedPos(prefix));
+  formData.append('linkUrl',      document.getElementById(prefix + 'LinkUrl').value.trim());
+  if (detectedRatios[prefix] != null) formData.append('aspectRatio', detectedRatios[prefix].toFixed(4));
 
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener('progress', e => {
-      if (e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        progBar.style.width = pct + '%';
-        progText.textContent = `Uploading… ${pct}%`;
-      }
-    });
-    xhr.addEventListener('load', () => {
-      progWrap.classList.remove('visible');
-      btn.disabled = false;
-      input.value  = '';
-      document.getElementById(fileNameId).textContent = 'No file chosen';
-      document.getElementById(descInputId).value = '';
-      document.getElementById(descWrapId).classList.remove('visible');
-      document.getElementById(posPillsId).querySelectorAll('[data-pos]').forEach(p => p.classList.toggle('active', p.dataset.pos === 'bottom'));
-      const linkEl = document.getElementById(prefix + 'LinkUrl');
-      if (linkEl) linkEl.value = '';
+  const xhr = new XMLHttpRequest();
+  xhr.upload.addEventListener('progress', e => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      progBar.style.width = pct + '%';
+      progTxt.textContent = `Uploading… ${pct}%`;
+    }
+  });
+  xhr.addEventListener('load', () => {
+    progWrap.classList.remove('on');
+    uploadBtn.disabled = false;
+    if (xhr.status === 200) {
+      // Reset form
+      input.value = '';
+      document.getElementById(prefix + 'FileNm').textContent = 'No file chosen';
+      document.getElementById(prefix + 'DescIn').value = '';
+      document.getElementById(prefix + 'LinkUrl').value = '';
+      document.getElementById(prefix + 'PosPills').querySelectorAll('[data-pos]').forEach(p => p.classList.toggle('active', p.dataset.pos === 'bottom'));
       detectedRatios[prefix] = null;
-      if (xhr.status === 200) { showToast('Uploaded!', 'success'); loadLibrary(gridId, getApiEndpoint(prefix)); }
-      else showToast('Upload failed. Try again.', 'error');
+      showToast('Uploaded!', 'success');
+      loadLibrary(prefix);
+    } else {
+      showToast('Upload failed. Try again.', 'error');
+    }
+  });
+  xhr.addEventListener('error', () => { progWrap.classList.remove('on'); uploadBtn.disabled = false; showToast('Upload failed.', 'error'); });
+  xhr.open('POST', getUploadEndpoint(prefix));
+  xhr.send(formData);
+}
+
+// ── Library ────────────────────────────────────────────────────────────────
+async function loadLibrary(prefix) {
+  const media   = await fetch(getApiEndpoint(prefix)).then(r => r.json());
+  const gridEl  = document.getElementById(getGridId(prefix));
+  if (!media.length) { gridEl.innerHTML = '<p class="lib-empty">No media uploaded yet.</p>'; return; }
+
+  gridEl.innerHTML = '';
+  media.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'lib-card'; wrap.id = prefix + '-card-' + item.id;
+
+    // Thumbnail
+    const thumb = document.createElement('div');
+    thumb.className = item.type === 'video' ? 'lib-thumb' : 'lib-thumb sq';
+
+    if (item.type === 'video') {
+      const v = document.createElement('video');
+      v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
+      v.addEventListener('mouseenter', () => v.play());
+      v.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 0; });
+      thumb.appendChild(v);
+    } else {
+      const img = document.createElement('img'); img.src = item.path; img.alt = ''; img.loading = 'lazy';
+      thumb.appendChild(img);
+    }
+    const badge = document.createElement('span'); badge.className = 'lib-badge'; badge.textContent = item.type === 'video' ? 'Video' : 'Photo';
+    thumb.appendChild(badge);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'lib-del'; delBtn.title = 'Delete'; delBtn.textContent = '✕';
+    delBtn.onclick = () => deleteItem(item.id, prefix);
+    thumb.appendChild(delBtn);
+    wrap.appendChild(thumb);
+
+    // Description
+    const ta = document.createElement('textarea');
+    ta.className = 'lib-ta'; ta.placeholder = 'Description…'; ta.value = item.description || ''; ta.rows = 2;
+    wrap.appendChild(ta);
+
+    // Layout pills
+    const pillRow = document.createElement('div');
+    pillRow.className = 'lib-pills';
+    const posLabels = { bottom:'Text Below', top:'Text Above', side:'Side by Side' };
+    ['bottom','top','side'].forEach(pos => {
+      const p = document.createElement('button');
+      p.className = 'lib-pill' + ((item.textPosition || 'bottom') === pos ? ' active' : '');
+      p.textContent = posLabels[pos]; p.dataset.cardPos = pos;
+      p.onclick = () => { pillRow.querySelectorAll('[data-card-pos]').forEach(x => x.classList.remove('active')); p.classList.add('active'); };
+      pillRow.appendChild(p);
     });
-    xhr.addEventListener('error', () => { progWrap.classList.remove('visible'); btn.disabled = false; showToast('Upload failed.', 'error'); });
-    xhr.open('POST', endpoint);
-    xhr.send(formData);
-  }
+    wrap.appendChild(pillRow);
 
-  function getApiEndpoint(prefix) {
-    if (prefix === 'app')   return '/api/app-media';
-    if (prefix === 'store') return '/api/store-media';
-    return '/api/media';
-  }
-  function getPatchEndpoint(prefix) {
-    if (prefix === 'app')   return '/api/app-media/';
-    if (prefix === 'store') return '/api/store-media/';
-    return '/api/media/';
-  }
-  function getDeleteEndpoint(prefix) { return getPatchEndpoint(prefix); }
+    // Link URL
+    const linkIn = document.createElement('input');
+    linkIn.type = 'url'; linkIn.className = 'lib-url';
+    linkIn.placeholder = 'Link URL (optional)'; linkIn.value = item.linkUrl || '';
+    wrap.appendChild(linkIn);
 
-  // ── Library (shared) ───────────────────────────────────────────────────────
-  async function loadLibrary(gridId, apiEndpoint) {
-    const media = await fetch(apiEndpoint).then(r => r.json());
-    const grid  = document.getElementById(gridId);
-    if (!media.length) { grid.innerHTML = '<p class="library-empty">No media uploaded yet.</p>'; return; }
+    // Save button
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-ghost lib-footer'; saveBtn.textContent = 'Save';
+    saveBtn.style.cssText = 'width:100%;justify-content:center;margin-top:2px;';
+    saveBtn.onclick = () => {
+      const pos = pillRow.querySelector('[data-card-pos].active')?.dataset.cardPos || 'bottom';
+      saveItem(item.id, ta, pos, linkIn.value.trim(), saveBtn, prefix);
+    };
+    wrap.appendChild(saveBtn);
 
-    const prefix = gridId.replace('LibraryGrid','');
-    grid.innerHTML = '';
+    gridEl.appendChild(wrap);
+  });
+}
 
-    media.forEach(item => {
-      const wrap = document.createElement('div');
-      wrap.className = 'media-card-wrap'; wrap.id = prefix + '-wrap-' + item.id;
-
-      const thumb = document.createElement('div');
-      thumb.className = item.type === 'video' ? 'media-thumb' : 'media-thumb square';
-
-      if (item.type === 'video') {
-        const v = document.createElement('video');
-        v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
-        v.addEventListener('mouseenter', () => v.play());
-        v.addEventListener('mouseleave', () => v.pause());
-        thumb.appendChild(v);
-        const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = 'Video';
-        thumb.appendChild(badge);
-      } else {
-        const img = document.createElement('img'); img.src = item.path; img.alt = ''; img.loading = 'lazy';
-        thumb.appendChild(img);
-        const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = 'Photo';
-        thumb.appendChild(badge);
-      }
-
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn'; delBtn.title = 'Delete'; delBtn.textContent = '✕';
-      delBtn.onclick = () => deleteItem(item.id, prefix, gridId, apiEndpoint);
-      thumb.appendChild(delBtn);
-      wrap.appendChild(thumb);
-
-      // Description + layout for ALL types (video and photo)
-      const ta = document.createElement('textarea');
-      ta.className = 'card-desc'; ta.placeholder = 'Add description…'; ta.value = item.description || ''; ta.rows = 3;
-      wrap.appendChild(ta);
-
-      const posRow = document.createElement('div');
-      posRow.style.cssText = 'display:flex;gap:0.4rem;margin-top:2px;flex-wrap:wrap;';
-      const labels = { bottom: 'Text below', top: 'Text above', side: 'Side by side' };
-      ['bottom','top','side'].forEach(pos => {
-        const pill = document.createElement('button');
-        pill.className = 'size-pill' + ((item.textPosition || 'bottom') === pos ? ' active' : '');
-        pill.textContent = labels[pos]; pill.dataset.cardPos = pos;
-        pill.onclick = () => { posRow.querySelectorAll('[data-card-pos]').forEach(p => p.classList.remove('active')); pill.classList.add('active'); };
-        posRow.appendChild(pill);
-      });
-      wrap.appendChild(posRow);
-
-      // Link URL editor
-      const linkRow = document.createElement('div');
-      linkRow.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-top:2px;';
-      const linkInput = document.createElement('input');
-      linkInput.type = 'url'; linkInput.placeholder = 'Link URL (optional)';
-      linkInput.value = item.linkUrl || '';
-      linkInput.style.cssText = 'flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.4rem 0.6rem;border-radius:5px;outline:none;';
-      linkRow.appendChild(linkInput);
-      wrap.appendChild(linkRow);
-
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'desc-save-btn'; saveBtn.textContent = 'Save';
-      saveBtn.onclick = () => {
-        const pos = posRow.querySelector('[data-card-pos].active')?.dataset.cardPos || 'bottom';
-        saveItemDesc(item.id, ta, pos, linkInput.value.trim(), saveBtn, getPatchEndpoint(prefix));
-      };
-      wrap.appendChild(saveBtn);
-
-      grid.appendChild(wrap);
+async function saveItem(id, ta, textPosition, linkUrl, btn, prefix) {
+  const orig = btn.textContent; btn.textContent = 'Saving…';
+  try {
+    const res = await fetch(getPatchEndpoint(prefix) + id, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ description: ta.value.trim(), textPosition, linkUrl })
     });
-  }
+    if (!res.ok) throw new Error();
+    btn.textContent = 'Saved ✓'; btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('saved'); }, 2000);
+  } catch { showToast('Could not save.', 'error'); btn.textContent = orig; }
+}
 
-  async function saveItemDesc(id, textarea, textPosition, linkUrl, btn, endpoint) {
-    const orig = btn.textContent; btn.textContent = 'Saving…';
-    try {
-      const res = await fetch(endpoint + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: textarea.value.trim(), textPosition, linkUrl }) });
-      if (!res.ok) throw new Error();
-      btn.textContent = 'Saved ✓'; btn.classList.add('saved');
-      setTimeout(() => { btn.textContent = orig; btn.classList.remove('saved'); }, 2000);
-    } catch { showToast('Could not save.', 'error'); btn.textContent = orig; }
-  }
+async function deleteItem(id, prefix) {
+  if (!confirm('Delete this file? This cannot be undone.')) return;
+  try {
+    const res = await fetch(getPatchEndpoint(prefix) + id, { method:'DELETE' });
+    if (!res.ok) throw new Error();
+    document.getElementById(prefix + '-card-' + id)?.remove();
+    const grid = document.getElementById(getGridId(prefix));
+    if (!grid.querySelector('.lib-card')) grid.innerHTML = '<p class="lib-empty">No media uploaded yet.</p>';
+    showToast('Deleted.', 'success');
+  } catch { showToast('Could not delete.', 'error'); }
+}
 
-  async function deleteItem(id, prefix, gridId, apiEndpoint) {
-    if (!confirm('Delete this file? Cannot be undone.')) return;
-    try {
-      const res = await fetch(getDeleteEndpoint(prefix) + id, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      document.getElementById(prefix + '-wrap-' + id)?.remove();
-      const grid = document.getElementById(gridId);
-      if (!grid.querySelector('.media-card-wrap')) grid.innerHTML = '<p class="library-empty">No media uploaded yet.</p>';
-      showToast('Deleted.', 'success');
-    } catch { showToast('Could not delete.', 'error'); }
-  }
+// ── Services ───────────────────────────────────────────────────────────────
+async function loadServices() {
+  const services = await fetch('/api/services').then(r => r.json());
+  const list = document.getElementById('svcList');
+  list.innerHTML = '';
+  if (!services.length) { list.innerHTML = '<p style="color:var(--muted);font-size:0.82rem;padding:0.5rem 0;">No services yet. Add one below.</p>'; return; }
+  services.forEach((svc, i) => {
+    const card = document.createElement('div');
+    card.className = 'svc-card'; card.id = 'svc-' + svc.id;
+    card.innerHTML = `
+      <div class="svc-top">
+        <span class="svc-num">${String(i+1).padStart(2,'0')}</span>
+        <input class="svc-title-in" type="text" id="svc-t-${svc.id}" value="${svc.title.replace(/"/g,'&quot;')}" placeholder="Service title" />
+      </div>
+      <textarea class="svc-desc-ta" id="svc-d-${svc.id}" placeholder="Description…">${svc.description}</textarea>
+      <div class="svc-foot">
+        <button class="btn-del" onclick="deleteSvc('${svc.id}')">Delete</button>
+        <button class="btn-ghost" id="svc-s-${svc.id}" onclick="saveSvc('${svc.id}')">Save</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
 
-  // ── Services ───────────────────────────────────────────────────────────────
-  async function loadServices() {
-    const services = await fetch('/api/services').then(r => r.json());
-    const list = document.getElementById('servicesList');
-    list.innerHTML = '';
-    if (!services.length) { list.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">No services yet.</p>'; return; }
-    services.forEach(svc => {
-      const card = document.createElement('div');
-      card.id = 'svc-' + svc.id;
-      card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;';
-      card.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-          <input type="text" value="${svc.title.replace(/"/g,'&quot;')}" placeholder="Service title" id="svc-title-${svc.id}"
-            style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.9rem;font-weight:600;padding:0.5rem 0.7rem;border-radius:5px;outline:none;flex:1;" />
-          <button onclick="deleteSvc('${svc.id}')"
-            style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.7rem;border-radius:5px;cursor:pointer;font-size:0.75rem;white-space:nowrap;"
-            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';"
-            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">Delete</button>
-        </div>
-        <textarea id="svc-desc-${svc.id}" placeholder="Description…"
-          style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.82rem;padding:0.5rem 0.7rem;border-radius:5px;outline:none;resize:vertical;min-height:60px;line-height:1.6;width:100%;">${svc.description}</textarea>
-        <button onclick="saveSvc('${svc.id}')" id="svc-save-${svc.id}"
-          style="align-self:flex-end;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:0.7rem;font-family:inherit;padding:4px 12px;border-radius:4px;cursor:pointer;"
-          onmouseover="this.style.borderColor='#888';this.style.color='var(--text)';"
-          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">Save</button>
-      `;
-      list.appendChild(card);
-    });
-  }
+async function saveSvc(id) {
+  const btn   = document.getElementById('svc-s-' + id);
+  const title = document.getElementById('svc-t-' + id).value.trim();
+  const desc  = document.getElementById('svc-d-' + id).value.trim();
+  const orig  = btn.textContent; btn.textContent = 'Saving…';
+  try {
+    const res = await fetch('/api/services/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, description: desc }) });
+    if (!res.ok) throw new Error();
+    btn.textContent = 'Saved ✓'; btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('saved'); }, 2000);
+  } catch { showToast('Could not save.', 'error'); btn.textContent = orig; }
+}
 
-  async function saveSvc(id) {
-    const btn   = document.getElementById('svc-save-' + id);
-    const title = document.getElementById('svc-title-' + id).value.trim();
-    const desc  = document.getElementById('svc-desc-'  + id).value.trim();
-    const orig  = btn.textContent; btn.textContent = 'Saving…';
-    try {
-      const res = await fetch('/api/services/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description: desc }) });
-      if (!res.ok) throw new Error();
-      btn.textContent = 'Saved ✓'; btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)';
-      setTimeout(() => { btn.textContent = orig; btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--muted)'; }, 2000);
-    } catch { showToast('Could not save service.', 'error'); btn.textContent = orig; }
-  }
+async function deleteSvc(id) {
+  if (!confirm('Delete this service?')) return;
+  try {
+    const res = await fetch('/api/services/' + id, { method:'DELETE' });
+    if (!res.ok) throw new Error();
+    document.getElementById('svc-' + id)?.remove();
+    showToast('Service deleted.', 'success');
+    // re-number
+    document.querySelectorAll('.svc-num').forEach((el, i) => { el.textContent = String(i+1).padStart(2,'0'); });
+  } catch { showToast('Could not delete.', 'error'); }
+}
 
-  async function deleteSvc(id) {
-    if (!confirm('Delete this service?')) return;
-    try {
-      const res = await fetch('/api/services/' + id, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      document.getElementById('svc-' + id)?.remove();
-      showToast('Service deleted.', 'success');
-    } catch { showToast('Could not delete.', 'error'); }
-  }
+async function addService() {
+  const title = document.getElementById('newSvcTitle').value.trim();
+  const desc  = document.getElementById('newSvcDesc').value.trim();
+  if (!title) { showToast('Enter a service title first.', 'error'); return; }
+  try {
+    const res = await fetch('/api/services', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ title, description: desc }) });
+    if (!res.ok) throw new Error();
+    document.getElementById('newSvcTitle').value = '';
+    document.getElementById('newSvcDesc').value  = '';
+    showToast('Service added!', 'success');
+    loadServices();
+  } catch { showToast('Could not add service.', 'error'); }
+}
 
-  async function addService() {
-    const title = document.getElementById('newSvcTitle').value.trim();
-    const desc  = document.getElementById('newSvcDesc').value.trim();
-    if (!title) { showToast('Enter a service title.', 'error'); return; }
-    try {
-      const res = await fetch('/api/services', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description: desc }) });
-      if (!res.ok) throw new Error();
-      document.getElementById('newSvcTitle').value = '';
-      document.getElementById('newSvcDesc').value  = '';
-      showToast('Service added!', 'success');
-      loadServices();
-    } catch { showToast('Could not add service.', 'error'); }
-  }
-
-  // ── Init ───────────────────────────────────────────────────────────────────
-  loadConfig();
-  loadServices();
-  loadLibrary('mainLibraryGrid',  '/api/media');
-  loadLibrary('appLibraryGrid',   '/api/app-media');
-  loadLibrary('storeLibraryGrid', '/api/store-media');
+// ── Boot ───────────────────────────────────────────────────────────────────
+loadConfig();
+loadServices();
+loadLibrary('main');
+loadLibrary('app');
+loadLibrary('store');
 </script>
 
 </body>
