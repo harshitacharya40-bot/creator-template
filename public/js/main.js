@@ -9,21 +9,81 @@ function pathToKey(p) {
   return 'home';
 }
 
+// ── Build ticker ───────────────────────────────────────────────────────────
+function buildTicker(cfg) {
+  if (document.getElementById('siteTicker')) return;
+  const name = cfg.creatorName || 'LVCHLDSTUDIOS';
+  const words = [name, 'ART', 'DESIGN', 'FWS ARCHIVE', name, 'ART', 'DESIGN', 'FWS ARCHIVE'];
+  const chunk = words.map(w =>
+    `<span class="ticker-item">${w}</span><span class="ticker-sep">—</span>`
+  ).join('');
+
+  const ticker = document.createElement('div');
+  ticker.className = 'ticker';
+  ticker.id = 'siteTicker';
+  ticker.innerHTML = `<div class="ticker-inner">${chunk}${chunk}</div>`;
+
+  const nav = document.querySelector('nav');
+  if (nav) nav.insertAdjacentElement('afterend', ticker);
+}
+
+// ── Build footer ───────────────────────────────────────────────────────────
+function buildFooter(cfg) {
+  const footer = document.getElementById('siteFooter');
+  if (!footer) return;
+
+  const shopUrl  = cfg.shopUrl       || 'https://futureworldsport.com';
+  const iosUrl   = cfg.appStoreUrl   || '#';
+  const playUrl  = cfg.googlePlayUrl || '#';
+  const igHandle = cfg.instagram
+    ? cfg.instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/$/, '')
+    : '';
+  const igUrl = cfg.instagram || '#';
+
+  footer.innerHTML = `
+    <a href="${shopUrl}" target="_blank" rel="noopener" class="footer-shop">
+      <span class="footer-shop-label">Shop</span>
+      <span class="footer-shop-name">FutureWorldSport.com</span>
+    </a>
+    <div class="footer-badges">
+      <a href="${iosUrl}" target="_blank" rel="noopener" class="app-badge">
+        <span class="badge-icon">⌘</span>
+        <div class="badge-text">
+          <span>Download on the</span>
+          <strong>App Store</strong>
+        </div>
+      </a>
+      <a href="${playUrl}" target="_blank" rel="noopener" class="app-badge">
+        <span class="badge-icon">▶</span>
+        <div class="badge-text">
+          <span>Get it on</span>
+          <strong>Google Play</strong>
+        </div>
+      </a>
+    </div>
+    <a href="${igUrl}" target="_blank" rel="noopener" class="footer-ig">
+      ${igHandle ? '@' + igHandle : 'Instagram'} ↗
+    </a>
+  `;
+}
+
 // ── Apply config to page ───────────────────────────────────────────────────
 async function applyConfig() {
   const cfg = await fetch('/api/config').then(r => r.json());
 
-  // Per-page title (or creator name as fallback)
+  // Nav logo
+  const logoEl = document.querySelector('.nav-logo');
+  if (logoEl) logoEl.textContent = cfg.creatorName;
+
+  // Per-page title
   const key       = pathToKey(window.location.pathname);
   const titles    = cfg.pageTitles || {};
   const pageTitle = (titles[key] !== undefined && titles[key] !== '') ? titles[key] : cfg.creatorName;
   const nameEl    = document.getElementById('creatorName');
   if (nameEl) nameEl.textContent = pageTitle;
 
-  // Tab title
   document.title = cfg.creatorName;
 
-  // Colors
   document.documentElement.style.setProperty('--accent', cfg.accentColor    || '#ffffff');
   document.documentElement.style.setProperty('--bg',     cfg.backgroundColor || '#000000');
 
@@ -45,18 +105,21 @@ async function applyConfig() {
     if (names[k]) a.textContent = names[k];
   });
 
+  buildTicker(cfg);
+  buildFooter(cfg);
+
   return cfg;
 }
 
 // ── Active nav link ────────────────────────────────────────────────────────
 function setActiveNav() {
   const p = window.location.pathname;
-  document.querySelectorAll('nav a').forEach(a => {
+  document.querySelectorAll('nav a[data-page]').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === p);
   });
 }
 
-// ── Sort: 16:9 (wide) first ────────────────────────────────────────────────
+// ── Sort: wide (16:9) first ────────────────────────────────────────────────
 function sortByAspect(items) {
   return [...items].sort((a, b) => {
     const aWide = (a.aspectRatio || 0) >= 1.6;
@@ -67,7 +130,7 @@ function sortByAspect(items) {
   });
 }
 
-// ── Create mute/unmute pill button ─────────────────────────────────────────
+// ── Mute/unmute pill button ────────────────────────────────────────────────
 function createMuteBtn(video) {
   const btn = document.createElement('button');
   btn.className   = 'mute-btn';
@@ -80,19 +143,7 @@ function createMuteBtn(video) {
   return btn;
 }
 
-// ── Wrap element in link if linkUrl present ────────────────────────────────
-function wrapWithLink(el, linkUrl) {
-  if (!linkUrl) return el;
-  const a = document.createElement('a');
-  a.href   = linkUrl;
-  a.target = '_blank';
-  a.rel    = 'noopener';
-  a.style.cssText = 'display:block;width:100%;height:100%;position:relative;';
-  a.appendChild(el);
-  return a;
-}
-
-// ── IntersectionObserver ───────────────────────────────────────────────────
+// ── IntersectionObserver for autoplay ─────────────────────────────────────
 const videoObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) e.target.play().catch(() => {});
@@ -101,21 +152,22 @@ const videoObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 function observeVideo(v) { videoObserver.observe(v); }
 
-// ── HOME — masonry wall ────────────────────────────────────────────────────
+// ── HOME — doom scroll wall ────────────────────────────────────────────────
 function renderWall(items) {
   const wall = document.getElementById('mediaWall');
   if (!wall) return;
-  if (!items.length) { wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>'; return; }
+  if (!items.length) {
+    wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>';
+    return;
+  }
 
-  const sorted = [
-    ...sortByAspect(items.filter(i => i.type === 'video')),
-    ...items.filter(i => i.type === 'photo')
-  ];
-
+  wall.className = 'doom-wall';
   wall.innerHTML = '';
-  sorted.forEach(item => {
+  const total = items.length;
+
+  items.forEach((item, idx) => {
     const wrap = document.createElement('div');
-    wrap.className = 'media-item';
+    wrap.className = 'doom-item';
 
     if (item.type === 'video') {
       const v = document.createElement('video');
@@ -123,7 +175,6 @@ function renderWall(items) {
       v.setAttribute('preload', 'metadata');
       observeVideo(v);
       if (item.linkUrl) {
-        // Video with link: clicking opens link, video still plays
         v.style.cursor = 'pointer';
         v.addEventListener('click', () => window.open(item.linkUrl, '_blank'));
       }
@@ -131,15 +182,35 @@ function renderWall(items) {
       wrap.appendChild(createMuteBtn(v));
     } else {
       const img = document.createElement('img');
-      img.src = item.path; img.alt = ''; img.loading = 'lazy';
+      img.src = item.path; img.alt = '';
+      img.loading = idx < 2 ? 'eager' : 'lazy';
       if (item.linkUrl) {
         const a = document.createElement('a');
         a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
-        a.appendChild(img); wrap.appendChild(a);
+        a.style.cssText = 'display:block;width:100%;height:100%;';
+        a.appendChild(img);
+        wrap.appendChild(a);
       } else {
         wrap.appendChild(img);
       }
     }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'doom-overlay';
+    wrap.appendChild(overlay);
+
+    const counter = document.createElement('div');
+    counter.className = 'doom-counter';
+    counter.textContent = `${String(idx + 1).padStart(3, '0')} / ${String(total).padStart(3, '0')}`;
+    wrap.appendChild(counter);
+
+    if (item.description) {
+      const desc = document.createElement('div');
+      desc.className = 'doom-desc';
+      desc.textContent = item.description;
+      wrap.appendChild(desc);
+    }
+
     wall.appendChild(wrap);
   });
 }
@@ -153,7 +224,7 @@ function renderRowPage(items, wallId, emptyMsg) {
   const sorted = sortByAspect(items);
   wall.innerHTML = '';
 
-  sorted.forEach(item => {
+  sorted.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'work-row';
 
@@ -173,10 +244,10 @@ function renderRowPage(items, wallId, emptyMsg) {
       vWrap.appendChild(createMuteBtn(v));
     } else {
       const img = document.createElement('img');
-      img.src = item.path; img.alt = ''; img.loading = 'lazy';
+      img.src = item.path; img.alt = '';
+      img.loading = idx < 2 ? 'eager' : 'lazy';
       img.style.cssText = 'width:100%;height:auto;display:block;';
       if (item.linkUrl) {
-        img.style.cursor = 'pointer';
         const a = document.createElement('a');
         a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
         a.appendChild(img); vWrap.appendChild(a);
@@ -210,8 +281,10 @@ function renderServices(services) {
     item.className = 'service-item';
     item.innerHTML = `
       <span class="service-number">${String(i + 1).padStart(2, '0')}</span>
-      <div class="service-title">${svc.title}</div>
-      <div class="service-desc">${svc.description}</div>
+      <div>
+        <div class="service-title">${svc.title}</div>
+        <div class="service-desc">${svc.description}</div>
+      </div>
     `;
     wrap.appendChild(item);
   });

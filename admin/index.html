@@ -214,6 +214,20 @@
           <input class="fi" type="email" id="inputEmail" placeholder="your@email.com" />
         </div>
       </div>
+      <div class="field">
+        <label>Shop URL</label>
+        <input class="fi" type="url" id="inputShopUrl" placeholder="https://futureworldsport.com" />
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>iOS App Store URL</label>
+          <input class="fi" type="url" id="inputAppStoreUrl" placeholder="https://apps.apple.com/…" />
+        </div>
+        <div class="field">
+          <label>Google Play URL</label>
+          <input class="fi" type="url" id="inputGooglePlayUrl" placeholder="https://play.google.com/…" />
+        </div>
+      </div>
     </div>
   </div>
 
@@ -583,10 +597,13 @@ syncColors('btnTextPicker',   'btnTextHex');
 async function loadConfig() {
   const cfg = await fetch('/api/config').then(r => r.json());
 
-  document.getElementById('inputName').value      = cfg.creatorName   || '';
-  document.getElementById('inputInsta').value     = cfg.instagram     || '';
-  document.getElementById('inputEmail').value     = cfg.email         || '';
-  document.getElementById('inputAdminUser').value = cfg.adminUsername || '';
+  document.getElementById('inputName').value          = cfg.creatorName   || '';
+  document.getElementById('inputInsta').value         = cfg.instagram     || '';
+  document.getElementById('inputEmail').value         = cfg.email         || '';
+  document.getElementById('inputAdminUser').value     = cfg.adminUsername || '';
+  document.getElementById('inputShopUrl').value       = cfg.shopUrl       || '';
+  document.getElementById('inputAppStoreUrl').value   = cfg.appStoreUrl   || '';
+  document.getElementById('inputGooglePlayUrl').value = cfg.googlePlayUrl || '';
 
   const accent = cfg.accentColor     || '#ffffff';
   const bg     = cfg.backgroundColor || '#000000';
@@ -638,6 +655,9 @@ async function saveSettings() {
     backgroundColor: document.getElementById('bgColorHex').value.trim() || '#000000',
     instagram:       document.getElementById('inputInsta').value.trim(),
     email:           document.getElementById('inputEmail').value.trim(),
+    shopUrl:         document.getElementById('inputShopUrl').value.trim(),
+    appStoreUrl:     document.getElementById('inputAppStoreUrl').value.trim(),
+    googlePlayUrl:   document.getElementById('inputGooglePlayUrl').value.trim(),
     adminUsername:   document.getElementById('inputAdminUser').value.trim() || undefined,
     adminPassword:   document.getElementById('inputAdminPass').value.trim() || undefined,
     pageNames: {

@@ -4,6 +4,9 @@
   "backgroundColor": "#000000",
   "instagram": "https://www.instagram.com/christianlovechild/",
   "email": "your@email.com",
+  "shopUrl": "https://futureworldsport.com",
+  "appStoreUrl": "",
+  "googlePlayUrl": "",
   "muteBtn": {
     "size": "medium",
     "bgColor": "transparent",
@@ -11,5 +14,21 @@
     "textColor": "#ffffff"
   },
   "adminUsername": "LVCHLDSTUDIOS",
-  "adminPassword": "LVCHLDSTUDIOS"
+  "adminPassword": "LVCHLDSTUDIOS",
+  "pageNames": {
+    "home": "Home",
+    "work": "Work",
+    "services": "Services",
+    "app": "App Store",
+    "store": "Store",
+    "letstalk": "Let's Talk"
+  },
+  "pageTitles": {
+    "home": "",
+    "work": "Work",
+    "services": "Services",
+    "app": "App Store",
+    "store": "Store",
+    "letstalk": "Let's Talk"
+  }
 }
