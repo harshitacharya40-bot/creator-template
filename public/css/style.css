@@ -222,8 +222,17 @@ html, body {
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 .site-footer {
-  padding: 2.5rem 2rem;
+  padding: 2rem 2rem;
   background: transparent;
+}
+
+/* On home page, footer is inside hero-wrap — pin it to the bottom */
+.hero-wrap .site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 .footer-icons {
   display: flex;
