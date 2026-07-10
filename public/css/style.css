@@ -222,97 +222,39 @@ html, body {
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 .site-footer {
-  border-top: 1px solid rgba(255,255,255,0.07);
-  padding: 3rem 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  padding: 2.5rem 2rem;
+  background: transparent;
+}
+.footer-icons {
+  display: flex;
   align-items: center;
-  gap: 2rem;
-}
-.footer-shop {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.footer-shop:hover { opacity: 0.5; }
-.footer-shop-label {
-  font-size: 0.5rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.2);
-}
-.footer-shop-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 0.04em;
-  color: #fff;
-  text-transform: uppercase;
-}
-.footer-badges {
-  display: flex;
-  gap: 0.55rem;
   justify-content: center;
+  gap: 2rem;
   flex-wrap: wrap;
 }
-.app-badge {
+.footer-icon-link {
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  border: 1px solid rgba(255,255,255,0.16);
-  padding: 0.6rem 1rem;
-  text-decoration: none;
-  color: #fff;
-  transition: border-color 0.15s, background 0.15s;
-  min-width: 120px;
-}
-.app-badge:hover {
-  border-color: rgba(255,255,255,0.55);
-  background: rgba(255,255,255,0.03);
-}
-.badge-icon {
-  flex-shrink: 0;
-  font-size: 1rem;
-  line-height: 1;
-  opacity: 0.8;
-}
-.badge-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
-.badge-text span {
-  font-size: 0.46rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  opacity: 0.45;
-}
-.badge-text strong {
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.footer-ig {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  text-decoration: none;
-  color: rgba(255,255,255,0.3);
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   transition: color 0.15s;
 }
-.footer-ig:hover { color: #fff; }
+.footer-icon-link:hover { color: #fff; }
+.footer-icon-link svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.footer-fws-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .atnp-grid { columns: 2; }
-  .site-footer { grid-template-columns: 1fr; gap: 2rem; }
-  .footer-ig { justify-content: flex-start; }
-  .footer-badges { justify-content: flex-start; }
 }
 @media (max-width: 700px) {
   .hero-ui { flex-direction: column; gap: 1.2rem; padding: 1.5rem; }
@@ -322,6 +264,6 @@ html, body {
   .doom-item { height: 65vh; }
   .doom-desc { display: none; }
   .atnp-grid { columns: 1; padding-bottom: 3rem; }
-  .site-footer { padding: 2rem 1rem; }
-  .app-badge { min-width: unset; flex: 1; }
+  .site-footer { padding: 1.5rem 1rem; }
+  .footer-icons { gap: 1.4rem; }
 }
