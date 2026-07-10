@@ -1,13 +1,17 @@
 // ── Path → page key ────────────────────────────────────────────────────────
 function pathToKey(p) {
-  if (p === '/')          return 'home';
-  if (p === '/work')      return 'work';
-  if (p === '/services')  return 'services';
-  if (p === '/app')       return 'app';
-  if (p === '/store')     return 'store';
-  if (p === '/letstalk')  return 'letstalk';
+  if (p === '/')      return 'home';
+  if (p === '/atnp')  return 'atnp';
+  if (p === '/mndkd') return 'mndkd';
+  if (p === '/abs')   return 'abs';
   return 'home';
 }
+
+const PAGE_TITLES = {
+  atnp:  "Art That's Not Paintings",
+  mndkd: "My Nixxas Don't Know Design",
+  abs:   "Archival Brand Sh*t"
+};
 
 // ── Build ticker ───────────────────────────────────────────────────────────
 function buildTicker(cfg) {
@@ -17,12 +21,10 @@ function buildTicker(cfg) {
   const chunk = words.map(w =>
     `<span class="ticker-item">${w}</span><span class="ticker-sep">—</span>`
   ).join('');
-
   const ticker = document.createElement('div');
   ticker.className = 'ticker';
   ticker.id = 'siteTicker';
   ticker.innerHTML = `<div class="ticker-inner">${chunk}${chunk}</div>`;
-
   const nav = document.querySelector('nav');
   if (nav) nav.insertAdjacentElement('afterend', ticker);
 }
@@ -31,15 +33,12 @@ function buildTicker(cfg) {
 function buildFooter(cfg) {
   const footer = document.getElementById('siteFooter');
   if (!footer) return;
-
   const shopUrl  = cfg.shopUrl       || 'https://futureworldsport.com';
   const iosUrl   = cfg.appStoreUrl   || '#';
   const playUrl  = cfg.googlePlayUrl || '#';
   const igHandle = cfg.instagram
     ? cfg.instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/$/, '')
     : '';
-  const igUrl = cfg.instagram || '#';
-
   footer.innerHTML = `
     <a href="${shopUrl}" target="_blank" rel="noopener" class="footer-shop">
       <span class="footer-shop-label">Shop</span>
@@ -48,46 +47,34 @@ function buildFooter(cfg) {
     <div class="footer-badges">
       <a href="${iosUrl}" target="_blank" rel="noopener" class="app-badge">
         <span class="badge-icon">⌘</span>
-        <div class="badge-text">
-          <span>Download on the</span>
-          <strong>App Store</strong>
-        </div>
+        <div class="badge-text"><span>Download on the</span><strong>App Store</strong></div>
       </a>
       <a href="${playUrl}" target="_blank" rel="noopener" class="app-badge">
         <span class="badge-icon">▶</span>
-        <div class="badge-text">
-          <span>Get it on</span>
-          <strong>Google Play</strong>
-        </div>
+        <div class="badge-text"><span>Get it on</span><strong>Google Play</strong></div>
       </a>
     </div>
-    <a href="${igUrl}" target="_blank" rel="noopener" class="footer-ig">
+    <a href="${cfg.instagram || '#'}" target="_blank" rel="noopener" class="footer-ig">
       ${igHandle ? '@' + igHandle : 'Instagram'} ↗
     </a>
   `;
 }
 
-// ── Apply config to page ───────────────────────────────────────────────────
+// ── Apply config ───────────────────────────────────────────────────────────
 async function applyConfig() {
   const cfg = await fetch('/api/config').then(r => r.json());
 
-  // Nav logo
   const logoEl = document.querySelector('.nav-logo');
   if (logoEl) logoEl.textContent = cfg.creatorName;
 
-  // Per-page title
-  const key       = pathToKey(window.location.pathname);
-  const titles    = cfg.pageTitles || {};
-  const pageTitle = (titles[key] !== undefined && titles[key] !== '') ? titles[key] : cfg.creatorName;
-  const nameEl    = document.getElementById('creatorName');
-  if (nameEl) nameEl.textContent = pageTitle;
+  const key = pathToKey(window.location.pathname);
+  const nameEl = document.getElementById('creatorName');
+  if (nameEl) nameEl.textContent = PAGE_TITLES[key] || cfg.creatorName;
 
   document.title = cfg.creatorName;
-
   document.documentElement.style.setProperty('--accent', cfg.accentColor    || '#ffffff');
   document.documentElement.style.setProperty('--bg',     cfg.backgroundColor || '#000000');
 
-  // Mute button styles
   const mb  = cfg.muteBtn || {};
   const sizeMap    = { small: '0.62rem', medium: '0.75rem', large: '0.95rem' };
   const paddingMap = { small: '3px 12px', medium: '5px 18px', large: '8px 26px' };
@@ -98,20 +85,12 @@ async function applyConfig() {
   document.documentElement.style.setProperty('--btn-fs',      sizeMap[sz]    || sizeMap.medium);
   document.documentElement.style.setProperty('--btn-padding', paddingMap[sz] || paddingMap.medium);
 
-  // Nav names
-  const names = cfg.pageNames || {};
-  document.querySelectorAll('nav a[data-page]').forEach(a => {
-    const k = a.dataset.page;
-    if (names[k]) a.textContent = names[k];
-  });
-
   buildTicker(cfg);
   buildFooter(cfg);
-
   return cfg;
 }
 
-// ── Active nav link ────────────────────────────────────────────────────────
+// ── Active nav ─────────────────────────────────────────────────────────────
 function setActiveNav() {
   const p = window.location.pathname;
   document.querySelectorAll('nav a[data-page]').forEach(a => {
@@ -119,18 +98,7 @@ function setActiveNav() {
   });
 }
 
-// ── Sort: wide (16:9) first ────────────────────────────────────────────────
-function sortByAspect(items) {
-  return [...items].sort((a, b) => {
-    const aWide = (a.aspectRatio || 0) >= 1.6;
-    const bWide = (b.aspectRatio || 0) >= 1.6;
-    if (aWide && !bWide) return -1;
-    if (!aWide && bWide) return  1;
-    return 0;
-  });
-}
-
-// ── Mute/unmute pill button ────────────────────────────────────────────────
+// ── Mute button ────────────────────────────────────────────────────────────
 function createMuteBtn(video) {
   const btn = document.createElement('button');
   btn.className   = 'mute-btn';
@@ -143,7 +111,7 @@ function createMuteBtn(video) {
   return btn;
 }
 
-// ── IntersectionObserver for autoplay ─────────────────────────────────────
+// ── Video autoplay observer ────────────────────────────────────────────────
 const videoObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) e.target.play().catch(() => {});
@@ -152,14 +120,11 @@ const videoObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 function observeVideo(v) { videoObserver.observe(v); }
 
-// ── HOME — doom scroll wall ────────────────────────────────────────────────
-function renderWall(items) {
+// ── Doom scroll renderer (MNDKD + ABS) ────────────────────────────────────
+function renderDoomScroll(items, emptyMsg) {
   const wall = document.getElementById('mediaWall');
   if (!wall) return;
-  if (!items.length) {
-    wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>';
-    return;
-  }
+  if (!items.length) { wall.innerHTML = `<p class="empty">${emptyMsg}</p>`; return; }
 
   wall.className = 'doom-wall';
   wall.innerHTML = '';
@@ -188,8 +153,7 @@ function renderWall(items) {
         const a = document.createElement('a');
         a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
         a.style.cssText = 'display:block;width:100%;height:100%;';
-        a.appendChild(img);
-        wrap.appendChild(a);
+        a.appendChild(img); wrap.appendChild(a);
       } else {
         wrap.appendChild(img);
       }
@@ -215,135 +179,57 @@ function renderWall(items) {
   });
 }
 
-// ── WORK / APP / STORE — row layout ───────────────────────────────────────
-function renderRowPage(items, wallId, emptyMsg) {
-  const wall = document.getElementById(wallId);
+// ── Photo grid renderer (ATNP) ─────────────────────────────────────────────
+function renderPhotoGrid(items) {
+  const wall = document.getElementById('mediaWall');
   if (!wall) return;
-  if (!items.length) { wall.innerHTML = `<p class="empty">${emptyMsg}</p>`; return; }
+  const photos = items.filter(i => i.type === 'photo');
+  if (!photos.length) { wall.innerHTML = '<p class="empty">No content yet — upload from the admin panel.</p>'; return; }
 
-  const sorted = sortByAspect(items);
   wall.innerHTML = '';
-
-  sorted.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'work-row';
-
-    const vWrap = document.createElement('div');
-    vWrap.className = 'work-video-wrap';
-
-    if (item.type === 'video') {
-      const v = document.createElement('video');
-      v.src = item.path; v.muted = true; v.loop = true; v.playsInline = true;
-      v.setAttribute('preload', 'metadata');
-      observeVideo(v);
-      if (item.linkUrl) {
-        v.style.cursor = 'pointer';
-        v.addEventListener('click', () => window.open(item.linkUrl, '_blank'));
-      }
-      vWrap.appendChild(v);
-      vWrap.appendChild(createMuteBtn(v));
+  photos.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'grid-item';
+    const img = document.createElement('img');
+    img.src = item.path; img.alt = ''; img.loading = 'lazy';
+    if (item.linkUrl) {
+      const a = document.createElement('a');
+      a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
+      a.appendChild(img); wrap.appendChild(a);
     } else {
-      const img = document.createElement('img');
-      img.src = item.path; img.alt = '';
-      img.loading = idx < 2 ? 'eager' : 'lazy';
-      img.style.cssText = 'width:100%;height:auto;display:block;';
-      if (item.linkUrl) {
-        const a = document.createElement('a');
-        a.href = item.linkUrl; a.target = '_blank'; a.rel = 'noopener';
-        a.appendChild(img); vWrap.appendChild(a);
-      } else {
-        vWrap.appendChild(img);
-      }
+      wrap.appendChild(img);
     }
-
-    const desc = document.createElement('div');
-    desc.className   = 'work-desc';
-    desc.textContent = item.description || '';
-
-    const layout = item.textPosition || 'bottom';
-    row.classList.add('layout-' + layout);
-
-    if (layout === 'top') { row.appendChild(desc); row.appendChild(vWrap); }
-    else                  { row.appendChild(vWrap); row.appendChild(desc); }
-
-    wall.appendChild(row);
+    wall.appendChild(wrap);
   });
-}
-
-// ── SERVICES page ─────────────────────────────────────────────────────────
-function renderServices(services) {
-  const wrap = document.getElementById('servicesWrap');
-  if (!wrap) return;
-  if (!services.length) { wrap.innerHTML = '<p class="empty">No services listed yet.</p>'; return; }
-  wrap.innerHTML = '';
-  services.forEach((svc, i) => {
-    const item = document.createElement('div');
-    item.className = 'service-item';
-    item.innerHTML = `
-      <span class="service-number">${String(i + 1).padStart(2, '0')}</span>
-      <div>
-        <div class="service-title">${svc.title}</div>
-        <div class="service-desc">${svc.description}</div>
-      </div>
-    `;
-    wrap.appendChild(item);
-  });
-}
-
-// ── Let's Talk ────────────────────────────────────────────────────────────
-function renderContact(cfg) {
-  const wrap = document.getElementById('contactWrap');
-  if (!wrap) return;
-  const handle = cfg.instagram
-    ? cfg.instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/, '').replace(/\/$/, '')
-    : '';
-  wrap.innerHTML = `
-    <div class="contact-block">
-      <p class="contact-label">Instagram</p>
-      <a class="contact-link" href="${cfg.instagram}" target="_blank" rel="noopener">
-        ${handle ? '@' + handle : cfg.instagram}
-      </a>
-    </div>
-    <div class="contact-block">
-      <p class="contact-label">Email</p>
-      <a class="contact-link" href="mailto:${cfg.email}">${cfg.email}</a>
-    </div>
-  `;
 }
 
 // ── Page entry points ──────────────────────────────────────────────────────
 async function initHome() {
-  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/media').then(r => r.json())]);
-  setActiveNav();
-  renderWall(media);
-}
-
-async function initWork() {
-  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/media').then(r => r.json())]);
-  setActiveNav();
-  renderRowPage(media.filter(m => m.type === 'video'), 'mediaWall', 'No videos yet — upload from the admin panel.');
-}
-
-async function initServices() {
-  const [cfg, services] = await Promise.all([applyConfig(), fetch('/api/services').then(r => r.json())]);
-  setActiveNav();
-  renderServices(services);
-}
-
-async function initApp() {
-  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/app-media').then(r => r.json())]);
-  setActiveNav();
-  renderRowPage(media, 'mediaWall', 'No content yet — upload from the admin panel.');
-}
-
-async function initStore() {
-  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/store-media').then(r => r.json())]);
-  setActiveNav();
-  renderRowPage(media, 'mediaWall', 'No content yet — upload from the admin panel.');
-}
-
-async function initLetsTalk() {
   const cfg = await applyConfig();
   setActiveNav();
-  renderContact(cfg);
+  const heroImg   = document.getElementById('heroImg');
+  const heroEmpty = document.getElementById('heroEmpty');
+  if (cfg.heroImage) {
+    heroImg.style.backgroundImage = `url('${cfg.heroImage}')`;
+  } else if (heroEmpty) {
+    heroEmpty.style.display = 'flex';
+  }
+}
+
+async function initATNP() {
+  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/atnp-media').then(r => r.json())]);
+  setActiveNav();
+  renderPhotoGrid(media);
+}
+
+async function initMNDKD() {
+  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/mndkd-media').then(r => r.json())]);
+  setActiveNav();
+  renderDoomScroll(media.filter(m => m.type === 'video'), 'No videos yet — upload from the admin panel.');
+}
+
+async function initABS() {
+  const [cfg, media] = await Promise.all([applyConfig(), fetch('/api/abs-media').then(r => r.json())]);
+  setActiveNav();
+  renderDoomScroll(media, 'No content yet — upload from the admin panel.');
 }

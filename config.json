@@ -30,5 +30,6 @@
     "app": "App Store",
     "store": "Store",
     "letstalk": "Let's Talk"
-  }
+  },
+  "heroImage": ""
 }

@@ -59,7 +59,7 @@ nav a[data-page] {
   color: #fff;
   text-decoration: none;
   font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.3;
   transition: opacity 0.15s;
@@ -103,11 +103,45 @@ nav a[data-page].active { opacity: 1; }
   to   { transform: translateX(-50%); }
 }
 
-/* ── Creator name / Page title ──────────────────────────────────────────── */
+/* ── HOME — Hero ────────────────────────────────────────────────────────── */
+.hero-wrap {
+  position: relative;
+  height: calc(100vh - 57px - 33px);
+  min-height: 400px;
+  overflow: hidden;
+  background: #080808;
+}
+.hero-img {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.8s ease;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
+}
+.hero-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.1);
+}
+
+/* ── Page title ─────────────────────────────────────────────────────────── */
 .creator-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(3rem, 13vw, 11rem);
-  line-height: 0.88;
+  font-size: clamp(2rem, 8vw, 7rem);
+  line-height: 0.9;
   letter-spacing: -0.01em;
   color: var(--accent);
   padding: 2rem 1.5rem 1.2rem;
@@ -115,12 +149,33 @@ nav a[data-page].active { opacity: 1; }
   text-transform: uppercase;
 }
 
-/* ── HOME — Doom scroll ─────────────────────────────────────────────────── */
+/* ── ATNP — photo grid ──────────────────────────────────────────────────── */
+.atnp-grid {
+  columns: 3;
+  column-gap: 3px;
+  padding: 3px 3px 6rem;
+}
+.grid-item {
+  break-inside: avoid;
+  margin-bottom: 3px;
+  display: block;
+  overflow: hidden;
+  background: #0a0a0a;
+  cursor: pointer;
+}
+.grid-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.6s ease;
+}
+.grid-item:hover img { transform: scale(1.04); }
+
+/* ── DOOM SCROLL (MNDKD + ABS) ──────────────────────────────────────────── */
 .doom-wall {
   display: flex;
   flex-direction: column;
 }
-
 .doom-item {
   width: 100%;
   height: 88vh;
@@ -139,18 +194,11 @@ nav a[data-page].active { opacity: 1; }
   transition: transform 0.9s ease;
 }
 .doom-item:hover img,
-.doom-item:hover video {
-  transform: scale(1.03);
-}
+.doom-item:hover video { transform: scale(1.03); }
 .doom-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.6) 0%,
-    rgba(0,0,0,0.08) 40%,
-    transparent 65%
-  );
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.08) 40%, transparent 65%);
   pointer-events: none;
 }
 .doom-counter {
@@ -175,7 +223,7 @@ nav a[data-page].active { opacity: 1; }
   pointer-events: none;
 }
 
-/* ── Mute/unmute button ─────────────────────────────────────────────────── */
+/* ── Mute button ────────────────────────────────────────────────────────── */
 .mute-btn {
   position: absolute;
   top: 1rem;
@@ -195,100 +243,7 @@ nav a[data-page].active { opacity: 1; }
 }
 .mute-btn:hover { opacity: 0.65; }
 
-/* ── WORK — editorial rows ──────────────────────────────────────────────── */
-.work-wall {
-  padding: 0 1.5rem 8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 7rem;
-}
-
-.work-row {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.work-video-wrap {
-  position: relative;
-  background: #080808;
-  overflow: hidden;
-}
-.work-video-wrap img,
-.work-video-wrap video {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.work-desc {
-  font-size: 0.8rem;
-  line-height: 1.95;
-  color: rgba(255,255,255,0.38);
-  max-width: 560px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* Layout variants */
-.work-row.layout-top,
-.work-row.layout-bottom {
-  flex-direction: column;
-  align-items: center;
-}
-.work-row.layout-top .work-video-wrap,
-.work-row.layout-bottom .work-video-wrap { width: 70%; }
-.work-row.layout-top .work-desc,
-.work-row.layout-bottom .work-desc { width: 70%; }
-.work-row.layout-side {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 3rem;
-}
-.work-row.layout-side .work-video-wrap { flex: 0 0 58%; }
-.work-row.layout-side .work-desc { flex: 1; padding-top: 0.4rem; }
-
-/* ── SERVICES ────────────────────────────────────────────────────────────── */
-.services-wrap {
-  padding: 0 1.5rem 8rem;
-}
-
-.service-item {
-  display: grid;
-  grid-template-columns: 4.5rem 1fr;
-  gap: 0 2.5rem;
-  padding: 3rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  align-items: start;
-}
-.service-item:first-child { border-top: 1px solid rgba(255,255,255,0.06); }
-
-.service-number {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 4rem;
-  line-height: 1;
-  color: rgba(255,255,255,0.05);
-  padding-top: 0.2rem;
-}
-
-.service-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  color: #fff;
-  margin-bottom: 0.9rem;
-  text-transform: uppercase;
-}
-
-.service-desc {
-  font-size: 0.8rem;
-  line-height: 1.95;
-  color: rgba(255,255,255,0.28);
-  max-width: 480px;
-}
-
-/* ── Empty state ─────────────────────────────────────────────────────────── */
+/* ── Empty state ────────────────────────────────────────────────────────── */
 .empty {
   padding: 5rem 1.5rem;
   font-size: 0.68rem;
@@ -297,34 +252,7 @@ nav a[data-page].active { opacity: 1; }
   color: rgba(255,255,255,0.1);
 }
 
-/* ── Let's Talk ──────────────────────────────────────────────────────────── */
-.contact-wrap {
-  padding: 3rem 1.5rem 6rem;
-}
-.contact-block {
-  margin-bottom: 4.5rem;
-}
-.contact-label {
-  font-size: 0.52rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.18);
-  margin-bottom: 0.65rem;
-}
-.contact-link {
-  display: block;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2.5rem, 10vw, 9rem);
-  line-height: 0.88;
-  color: #fff;
-  text-decoration: none;
-  letter-spacing: -0.01em;
-  transition: opacity 0.15s;
-  word-break: break-all;
-}
-.contact-link:hover { opacity: 0.45; }
-
-/* ── Footer ──────────────────────────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────────────────────── */
 .site-footer {
   border-top: 1px solid rgba(255,255,255,0.07);
   padding: 3rem 1.5rem;
@@ -333,7 +261,6 @@ nav a[data-page].active { opacity: 1; }
   align-items: center;
   gap: 2rem;
 }
-
 .footer-shop {
   display: flex;
   flex-direction: column;
@@ -355,14 +282,12 @@ nav a[data-page].active { opacity: 1; }
   color: #fff;
   text-transform: uppercase;
 }
-
 .footer-badges {
   display: flex;
   gap: 0.55rem;
   justify-content: center;
   flex-wrap: wrap;
 }
-
 .app-badge {
   display: flex;
   align-items: center;
@@ -401,7 +326,6 @@ nav a[data-page].active { opacity: 1; }
   font-weight: 700;
   text-transform: uppercase;
 }
-
 .footer-ig {
   display: flex;
   justify-content: flex-end;
@@ -415,17 +339,9 @@ nav a[data-page].active { opacity: 1; }
 }
 .footer-ig:hover { color: #fff; }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .work-row.layout-top .work-video-wrap,
-  .work-row.layout-bottom .work-video-wrap { width: 85%; }
-  .work-row.layout-top .work-desc,
-  .work-row.layout-bottom .work-desc { width: 85%; }
-  .work-row.layout-side { flex-direction: column; }
-  .work-row.layout-side .work-video-wrap { flex: none; width: 100%; }
-  .work-row.layout-side .work-desc { flex: none; }
-  .service-item { grid-template-columns: 3rem 1fr; gap: 0 1.5rem; }
-  .service-number { font-size: 2.5rem; }
+  .atnp-grid { columns: 2; }
   .site-footer { grid-template-columns: 1fr; gap: 2rem; }
   .footer-ig { justify-content: flex-start; }
   .footer-badges { justify-content: flex-start; }
@@ -433,20 +349,13 @@ nav a[data-page].active { opacity: 1; }
 @media (max-width: 600px) {
   nav { padding: 0.8rem 1rem; }
   .nav-logo { font-size: 1.2rem; }
-  .nav-links { gap: 1rem; }
-  nav a[data-page] { font-size: 0.58rem; letter-spacing: 0.08em; }
+  .nav-links { gap: 1.1rem; }
+  nav a[data-page] { font-size: 0.58rem; }
   .creator-name { padding: 1.5rem 1rem 0.8rem; }
+  .hero-wrap { height: calc(100vh - 50px - 33px); }
   .doom-item { height: 65vh; }
   .doom-desc { display: none; }
-  .work-wall { padding: 0 1rem 4rem; gap: 4rem; }
-  .work-row.layout-top .work-video-wrap,
-  .work-row.layout-bottom .work-video-wrap { width: 100%; }
-  .work-row.layout-top .work-desc,
-  .work-row.layout-bottom .work-desc { width: 100%; }
-  .services-wrap { padding: 0 1rem 4rem; }
-  .service-item { grid-template-columns: 1fr; }
-  .service-number { display: none; }
-  .contact-wrap { padding: 2rem 1rem 4rem; }
+  .atnp-grid { columns: 1; padding-bottom: 3rem; }
   .site-footer { padding: 2rem 1rem; }
   .app-badge { min-width: unset; flex: 1; }
 }
