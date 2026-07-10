@@ -197,6 +197,25 @@ app.post('/api/hero-upload', requireAuth, heroUpload.single('file'), (req, res) 
   res.json({ ok: true, path: heroPath });
 });
 
+// ── Admin API — FWS logo ───────────────────────────────────────────────────
+const fwsLogoUpload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, cb) { cb(null, rp('uploads/hero')); },
+    filename(req, file, cb)    { cb(null, 'fws-logo' + path.extname(file.originalname).toLowerCase()); }
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter(req, file, cb) {
+    if (file.mimetype.startsWith('image/')) return cb(null, true);
+    cb(new Error('Images only'));
+  }
+});
+app.post('/api/fws-logo-upload', requireAuth, fwsLogoUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received' });
+  const logoPath = `/uploads/hero/${req.file.filename}`;
+  const cfg = readConfig(); cfg.fwsLogo = logoPath; writeConfig(cfg);
+  res.json({ ok: true, path: logoPath });
+});
+
 // ── Admin API — ATNP ──────────────────────────────────────────────────────
 app.post('/api/atnp-media/upload', ...atnpCrud.upload);
 app.patch('/api/atnp-media/:id',   ...atnpCrud.patch);

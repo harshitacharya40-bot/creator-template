@@ -23,7 +23,9 @@ function buildFooter(cfg) {
     {
       href: 'https://www.futureworldsport.com/',
       label: 'FutureWorldSport',
-      svg: `<span class="footer-fws-text">FWS</span>`
+      svg: cfg.fwsLogo
+        ? `<img src="${cfg.fwsLogo}" alt="FutureWorldSport" class="footer-fws-logo" />`
+        : `<span class="footer-fws-text">FWS</span>`
     },
     {
       href: 'https://www.instagram.com/futureworldsport',

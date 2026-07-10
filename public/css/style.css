@@ -260,6 +260,15 @@ html, body {
   letter-spacing: 0.1em;
   line-height: 1;
 }
+.footer-fws-logo {
+  height: 22px;
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 0.45;
+  transition: opacity 0.15s;
+}
+.footer-icon-link:hover .footer-fws-logo { opacity: 1; }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {

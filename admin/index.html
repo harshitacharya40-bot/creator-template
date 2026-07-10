@@ -169,6 +169,23 @@
   </div>
 
   <div class="sec">
+    <p class="sec-label">FWS Logo (Footer)</p>
+    <div class="upload-area">
+      <img class="hero-preview" id="fwsLogoPreview" src="" alt="Current FWS logo" style="object-fit:contain;background:#111;" />
+      <div class="file-row">
+        <label class="file-btn" for="fwsLogoFileIn">📁 Choose Logo</label>
+        <input type="file" id="fwsLogoFileIn" style="display:none;" accept="image/*" onchange="onFwsLogoPicked(this)" />
+        <span class="file-nm" id="fwsLogoFileNm">No file chosen</span>
+      </div>
+      <div class="prog-wrap" id="fwsLogoProg">
+        <div class="prog-bg"><div class="prog-fill" id="fwsLogoProgBar"></div></div>
+        <span class="prog-txt" id="fwsLogoProgTxt">Uploading…</span>
+      </div>
+      <button class="btn-white" id="fwsLogoUploadBtn" onclick="uploadFwsLogo()" disabled>Upload Logo</button>
+    </div>
+  </div>
+
+  <div class="sec">
     <p class="sec-label">Colors</p>
     <div class="card">
       <div class="row2">
@@ -358,6 +375,10 @@ async function loadConfig() {
     const prev = document.getElementById('heroPreview');
     prev.src = cfg.heroImage; prev.classList.add('show');
   }
+  if (cfg.fwsLogo) {
+    const prev = document.getElementById('fwsLogoPreview');
+    prev.src = cfg.fwsLogo; prev.classList.add('show');
+  }
 }
 
 // ── Save settings ──────────────────────────────────────────────────────────
@@ -433,6 +454,53 @@ function uploadHero() {
   });
   xhr.addEventListener('error', () => { progWrap.classList.remove('on'); btn.disabled = false; showToast('Upload failed.', 'error'); });
   xhr.open('POST', '/api/hero-upload');
+  xhr.send(formData);
+}
+
+// ── FWS Logo upload ───────────────────────────────────────────────────────
+function onFwsLogoPicked(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('fwsLogoFileNm').textContent = file.name;
+  document.getElementById('fwsLogoUploadBtn').disabled = false;
+}
+
+function uploadFwsLogo() {
+  const input    = document.getElementById('fwsLogoFileIn');
+  const file     = input.files[0];
+  if (!file) return;
+  const btn      = document.getElementById('fwsLogoUploadBtn');
+  const progWrap = document.getElementById('fwsLogoProg');
+  const progBar  = document.getElementById('fwsLogoProgBar');
+  const progTxt  = document.getElementById('fwsLogoProgTxt');
+  btn.disabled = true; progWrap.classList.add('on'); progBar.style.width = '0%';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const xhr = new XMLHttpRequest();
+  xhr.upload.addEventListener('progress', e => {
+    if (e.lengthComputable) {
+      const pct = Math.round((e.loaded / e.total) * 100);
+      progBar.style.width = pct + '%';
+      progTxt.textContent = `Uploading… ${pct}%`;
+    }
+  });
+  xhr.addEventListener('load', () => {
+    progWrap.classList.remove('on'); btn.disabled = false;
+    if (xhr.status === 200) {
+      const data = JSON.parse(xhr.responseText);
+      const prev = document.getElementById('fwsLogoPreview');
+      prev.src = data.path + '?t=' + Date.now(); prev.classList.add('show');
+      document.getElementById('fwsLogoFileNm').textContent = 'No file chosen';
+      input.value = ''; btn.disabled = true;
+      showToast('FWS logo updated!', 'success');
+    } else {
+      showToast('Upload failed.', 'error');
+    }
+  });
+  xhr.addEventListener('error', () => { progWrap.classList.remove('on'); btn.disabled = false; showToast('Upload failed.', 'error'); });
+  xhr.open('POST', '/api/fws-logo-upload');
   xhr.send(formData);
 }
 
