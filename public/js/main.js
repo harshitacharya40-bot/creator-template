@@ -13,21 +13,6 @@ const PAGE_TITLES = {
   abs:   "Archival Brand Sh*t"
 };
 
-// ── Build ticker ───────────────────────────────────────────────────────────
-function buildTicker(cfg) {
-  if (document.getElementById('siteTicker')) return;
-  const name = cfg.creatorName || 'LVCHLDSTUDIOS';
-  const words = [name, 'ART', 'DESIGN', 'FWS ARCHIVE', name, 'ART', 'DESIGN', 'FWS ARCHIVE'];
-  const chunk = words.map(w =>
-    `<span class="ticker-item">${w}</span><span class="ticker-sep">—</span>`
-  ).join('');
-  const ticker = document.createElement('div');
-  ticker.className = 'ticker';
-  ticker.id = 'siteTicker';
-  ticker.innerHTML = `<div class="ticker-inner">${chunk}${chunk}</div>`;
-  const nav = document.querySelector('nav');
-  if (nav) nav.insertAdjacentElement('afterend', ticker);
-}
 
 // ── Build footer ───────────────────────────────────────────────────────────
 function buildFooter(cfg) {
@@ -64,7 +49,7 @@ function buildFooter(cfg) {
 async function applyConfig() {
   const cfg = await fetch('/api/config').then(r => r.json());
 
-  const logoEl = document.querySelector('.nav-logo');
+  const logoEl = document.querySelector('.hero-logo');
   if (logoEl) logoEl.textContent = cfg.creatorName;
 
   const key = pathToKey(window.location.pathname);
@@ -85,7 +70,6 @@ async function applyConfig() {
   document.documentElement.style.setProperty('--btn-fs',      sizeMap[sz]    || sizeMap.medium);
   document.documentElement.style.setProperty('--btn-padding', paddingMap[sz] || paddingMap.medium);
 
-  buildTicker(cfg);
   buildFooter(cfg);
   return cfg;
 }
@@ -93,7 +77,7 @@ async function applyConfig() {
 // ── Active nav ─────────────────────────────────────────────────────────────
 function setActiveNav() {
   const p = window.location.pathname;
-  document.querySelectorAll('nav a[data-page]').forEach(a => {
+  document.querySelectorAll('a[data-page]').forEach(a => {
     a.classList.toggle('active', a.getAttribute('href') === p);
   });
 }

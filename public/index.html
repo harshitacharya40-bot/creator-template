@@ -10,19 +10,21 @@
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-  <nav>
-    <a href="/" class="nav-logo">LVCHLDSTUDIOS</a>
-    <div class="nav-links">
-      <a href="/atnp" data-page="atnp">Art That's Not Paintings</a>
-      <a href="/mndkd" data-page="mndkd">My Nixxas Don't Know Design</a>
-      <a href="/abs" data-page="abs">Archival Brand Sh*t</a>
-    </div>
-  </nav>
-  <div class="hero-wrap">
+  <div class="hero-wrap" id="heroWrap">
     <div class="hero-img" id="heroImg"></div>
     <div class="hero-overlay"></div>
     <p class="hero-empty" id="heroEmpty" style="display:none;">Upload your hero image from the admin panel.</p>
+
+    <div class="hero-ui">
+      <a href="/" class="hero-logo" id="heroLogo">LVCHLDSTUDIOS</a>
+      <div class="hero-pages">
+        <a href="/atnp" data-page="atnp">Art That's Not Paintings</a>
+        <a href="/mndkd" data-page="mndkd">My Nixxas Don't Know Design</a>
+        <a href="/abs" data-page="abs">Archival Brand Sh*t</a>
+      </div>
+    </div>
   </div>
+
   <footer class="site-footer" id="siteFooter"></footer>
   <script src="/js/main.js"></script>
   <script>initHome();</script>

@@ -22,109 +22,63 @@ html, body {
   overflow-x: hidden;
 }
 
-/* ── Navigation ─────────────────────────────────────────────────────────── */
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  background: var(--bg);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  gap: 1rem;
-}
-
-.nav-logo {
+/* ── Floating header (all pages) ────────────────────────────────────────── */
+.hero-logo {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.55rem;
-  letter-spacing: 0.05em;
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
   color: #fff;
   text-decoration: none;
   line-height: 1;
   flex-shrink: 0;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
 
-.nav-links {
+.hero-pages {
   display: flex;
   align-items: center;
-  gap: 1.75rem;
-  overflow-x: auto;
-  scrollbar-width: none;
+  gap: 2.5rem;
 }
-.nav-links::-webkit-scrollbar { display: none; }
 
-nav a[data-page] {
+.hero-pages a[data-page] {
   color: #fff;
   text-decoration: none;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.3;
+  opacity: 0.45;
   transition: opacity 0.15s;
   white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
-nav a[data-page]:hover  { opacity: 1; }
-nav a[data-page].active { opacity: 1; }
+.hero-pages a[data-page]:hover  { opacity: 1; }
+.hero-pages a[data-page].active { opacity: 1; }
 
-/* ── Ticker ─────────────────────────────────────────────────────────────── */
-.ticker {
-  background: #fff;
-  color: #000;
-  overflow: hidden;
-  padding: 0.42rem 0;
-  white-space: nowrap;
-  position: relative;
-  z-index: 100;
-}
-.ticker-inner {
-  display: inline-flex;
-  align-items: center;
-  animation: ticker-move 38s linear infinite;
-  will-change: transform;
-}
-.ticker-item {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.82rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  padding: 0 1.8rem;
-  flex-shrink: 0;
-}
-.ticker-sep {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.82rem;
-  opacity: 0.22;
-  flex-shrink: 0;
-}
-@keyframes ticker-move {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* ── HOME — Hero ────────────────────────────────────────────────────────── */
+/* ── HOME — Hero full screen ────────────────────────────────────────────── */
 .hero-wrap {
   position: relative;
-  height: calc(100vh - 57px - 33px);
-  min-height: 400px;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
   background: #080808;
 }
+
 .hero-img {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  transition: transform 0.8s ease;
 }
+
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.08) 40%, rgba(0,0,0,0.25) 100%);
   pointer-events: none;
 }
+
 .hero-empty {
   position: absolute;
   inset: 0;
@@ -134,19 +88,33 @@ nav a[data-page].active { opacity: 1; }
   font-size: 0.62rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.15);
 }
 
-/* ── Page title ─────────────────────────────────────────────────────────── */
-.creator-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2rem, 8vw, 7rem);
-  line-height: 0.9;
-  letter-spacing: -0.01em;
-  color: var(--accent);
-  padding: 2rem 1.5rem 1.2rem;
-  user-select: none;
-  text-transform: uppercase;
+/* UI overlay: logo top-left, pages spread across top */
+.hero-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 2rem 2rem;
+  z-index: 10;
+}
+
+/* ── Inner page header (ATNP, MNDKD, ABS) ──────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg);
+  gap: 1.5rem;
 }
 
 /* ── ATNP — photo grid ──────────────────────────────────────────────────── */
@@ -346,13 +314,11 @@ nav a[data-page].active { opacity: 1; }
   .footer-ig { justify-content: flex-start; }
   .footer-badges { justify-content: flex-start; }
 }
-@media (max-width: 600px) {
-  nav { padding: 0.8rem 1rem; }
-  .nav-logo { font-size: 1.2rem; }
-  .nav-links { gap: 1.1rem; }
-  nav a[data-page] { font-size: 0.58rem; }
-  .creator-name { padding: 1.5rem 1rem 0.8rem; }
-  .hero-wrap { height: calc(100vh - 50px - 33px); }
+@media (max-width: 700px) {
+  .hero-ui { flex-direction: column; gap: 1.2rem; padding: 1.5rem; }
+  .hero-pages { gap: 1.2rem; flex-wrap: wrap; }
+  .hero-pages a[data-page] { font-size: 1.1rem; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 0.8rem; padding: 1rem 1.2rem; }
   .doom-item { height: 65vh; }
   .doom-desc { display: none; }
   .atnp-grid { columns: 1; padding-bottom: 3rem; }
